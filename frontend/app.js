@@ -1,6 +1,113 @@
 // API Base URL - cambiar según el entorno
 const API_BASE_URL = 'http://localhost:8000';
 
+// Modo demo con datos mock
+const DEMO_MODE = true; // Cambiar a false cuando el backend esté disponible
+
+// Datos mock para demostración
+const MOCK_DATA = {
+    lexico: {
+        status: 'success',
+        tokens: [
+            { type: 'FN', value: 'fn', line: 1 },
+            { type: 'IDENTIFIER', value: 'main', line: 1 },
+            { type: 'LPAREN', value: '(', line: 1 },
+            { type: 'RPAREN', value: ')', line: 1 },
+            { type: 'LBRACE', value: '{', line: 1 },
+            { type: 'LET', value: 'let', line: 2 },
+            { type: 'IDENTIFIER', value: 'x', line: 2 },
+            { type: 'ASSIGN', value: '=', line: 2 },
+            { type: 'NUMBER', value: '5', line: 2 },
+            { type: 'SEMICOLON', value: ';', line: 2 },
+            { type: 'IDENTIFIER', value: 'println', line: 3 },
+            { type: 'MACRO', value: '!', line: 3 },
+            { type: 'LPAREN', value: '(', line: 3 },
+            { type: 'STRING', value: '"Hola, mundo!"', line: 3 },
+            { type: 'RPAREN', value: ')', line: 3 },
+            { type: 'SEMICOLON', value: ';', line: 3 },
+            { type: 'RBRACE', value: '}', line: 4 }
+        ],
+        errors: [],
+        log_file: 'lexico-demo-24-10-2025-15:30.txt'
+    },
+    sintactico: {
+        status: 'success',
+        tokens: [
+            { type: 'FN', value: 'fn', line: 1 },
+            { type: 'IDENTIFIER', value: 'main', line: 1 }
+        ],
+        errors: [],
+        ast: {
+            type: 'Program',
+            body: [
+                {
+                    type: 'FunctionDeclaration',
+                    name: 'main',
+                    params: [],
+                    body: {
+                        type: 'BlockStatement',
+                        statements: [
+                            {
+                                type: 'VariableDeclaration',
+                                name: 'x',
+                                value: 5
+                            },
+                            {
+                                type: 'MacroCall',
+                                name: 'println',
+                                args: ['"Hola, mundo!"']
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        log_file: 'sintactico-demo-24-10-2025-15:31.txt'
+    },
+    semantico: {
+        status: 'success',
+        tokens: [],
+        errors: [],
+        ast: null,
+        log_file: 'semantico-demo-24-10-2025-15:32.txt'
+    },
+    completo: {
+        status: 'success',
+        tokens: [
+            { type: 'FN', value: 'fn', line: 1 },
+            { type: 'IDENTIFIER', value: 'main', line: 1 },
+            { type: 'LPAREN', value: '(', line: 1 },
+            { type: 'RPAREN', value: ')', line: 1 }
+        ],
+        errors: [],
+        ast: {
+            type: 'Program',
+            body: []
+        },
+        log_file: 'completo-demo-24-10-2025-15:33.txt'
+    },
+    error_example: {
+        status: 'error',
+        tokens: [
+            { type: 'FN', value: 'fn', line: 1 },
+            { type: 'ERROR', value: '@', line: 2 }
+        ],
+        errors: [
+            {
+                type: 'Error Léxico',
+                message: 'Token no reconocido: \'@\'',
+                line: 2
+            },
+            {
+                type: 'Error Sintáctico',
+                message: 'Se esperaba identificador después de "fn"',
+                line: 1
+            }
+        ],
+        log_file: 'error-demo-24-10-2025-15:34.txt'
+    }
+};
+
 // Elementos del DOM
 const codeEditor = document.getElementById('codeEditor');
 const lineNumbers = document.getElementById('lineNumbers');
@@ -88,6 +195,17 @@ async function executeAnalysis(type) {
 
     updateStatus(`Ejecutando análisis ${type}...`, 'loading');
 
+    // Si está en modo demo, usar datos mock
+    if (DEMO_MODE) {
+        await simulateDelay(800); // Simular tiempo de procesamiento
+        const data = MOCK_DATA[type];
+        displayResults(data, type);
+        updateStatus(`✓ Análisis ${type} completado (MODO DEMO)`, 'success');
+        updateLogInfo(data.log_file);
+        return;
+    }
+
+    // Modo producción: llamar al backend real
     try {
         const response = await fetch(`${API_BASE_URL}/analyze/${type}`, {
             method: 'POST',
@@ -111,6 +229,11 @@ async function executeAnalysis(type) {
         updateStatus(`Error al ejecutar análisis: ${error.message}`, 'error');
         displayError(error.message);
     }
+}
+
+// Simular delay para modo demo
+function simulateDelay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 btnLexico.addEventListener('click', () => executeAnalysis('lexico'));
@@ -208,4 +331,15 @@ document.getElementById('menuAyuda').addEventListener('click', () => {
 
 // Inicializar
 updateLineNumbers();
-updateStatus('Listo');
+
+// Cargar código de ejemplo en modo demo
+if (DEMO_MODE) {
+    codeEditor.value = `fn main() {
+    let x = 5;
+    println!("Hola, mundo!");
+}`;
+    updateLineNumbers();
+    updateStatus('Listo - MODO DEMO (Datos de ejemplo)', 'success');
+} else {
+    updateStatus('Listo');
+}
