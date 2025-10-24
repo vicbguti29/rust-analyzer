@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador Léxico, Sintáctico y Semántico - Rust</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Analizador Léxico, Sintáctico y Semántico - Rust</h1>
+            <nav>
+                <button id="menuArchivo">Archivo</button>
+                <button id="menuAnalisis">Análisis</button>
+                <button id="menuAyuda">Ayuda</button>
+            </nav>
+        </header>
+
+        <main class="workspace">
+            <!-- Panel Izquierdo: Editor -->
+            <div class="editor-panel">
+                <div class="editor-header">
+                    <h2>Editor de Código</h2>
+                    <div class="editor-actions">
+                        <button id="btnCargar" class="btn-secondary">Cargar .rs</button>
+                        <button id="btnLimpiar" class="btn-secondary">Limpiar</button>
+                    </div>
+                </div>
+
+                <div class="editor-container">
+                    <div class="line-numbers" id="lineNumbers">1</div>
+                    <textarea id="codeEditor" placeholder="fn main() {&#10;    println!(&quot;Hello, world!&quot;);&#10;}" spellcheck="false"></textarea>
+                </div>
+
+                <div class="analysis-buttons">
+                    <button id="btnLexico" class="btn-primary">▶ Análisis Léxico</button>
+                    <button id="btnSintactico" class="btn-primary">▶ Análisis Sintáctico</button>
+                    <button id="btnSemantico" class="btn-primary">▶ Análisis Semántico</button>
+                    <button id="btnCompleto" class="btn-success">▶ Análisis Completo</button>
+                </div>
+            </div>
+
+            <!-- Panel Derecho: Resultados -->
+            <div class="results-panel">
+                <div class="results-header">
+                    <h2>Panel de Resultados</h2>
+                    <div class="tabs">
+                        <button class="tab active" data-tab="tokens">Tokens</button>
+                        <button class="tab" data-tab="errors">Errores</button>
+                        <button class="tab" data-tab="ast">AST</button>
+                    </div>
+                </div>
+
+                <div class="results-content">
+                    <div id="tokensTab" class="tab-content active">
+                        <h3>Tokens Encontrados</h3>
+                        <div id="tokensList" class="results-list">
+                            <p class="placeholder">Ejecute un análisis léxico para ver los tokens</p>
+                        </div>
+                    </div>
+
+                    <div id="errorsTab" class="tab-content">
+                        <h3>Errores Detectados</h3>
+                        <div id="errorsList" class="results-list">
+                            <p class="placeholder">No hay errores detectados</p>
+                        </div>
+                    </div>
+
+                    <div id="astTab" class="tab-content">
+                        <h3>Árbol Sintáctico Abstracto</h3>
+                        <div id="astView" class="results-list">
+                            <p class="placeholder">Ejecute un análisis sintáctico para ver el AST</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="status-bar">
+            <div id="status">Estado: Listo</div>
+            <div id="logInfo">Logs: Ninguno generado</div>
+        </footer>
+    </div>
+
+    <!-- Input file oculto para cargar archivos -->
+    <input type="file" id="fileInput" accept=".rs" style="display: none;">
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Header */
+header {
+    background: #2E3440;
+    color: #D8DEE9;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+nav {
+    display: flex;
+    gap: 1rem;
+}
+
+nav button {
+    background: transparent;
+    border: 1px solid #4C566A;
+    color: #D8DEE9;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+nav button:hover {
+    background: #4C566A;
+}
+
+/* Workspace */
+.workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Editor Panel */
+.editor-panel {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.editor-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.editor-header h2 {
+    font-size: 1.2rem;
+    color: #2E3440;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.editor-container {
+    flex: 1;
+    display: flex;
+    background: #2E3440;
+    overflow: hidden;
+}
+
+.line-numbers {
+    background: #2E3440;
+    color: #4C566A;
+    padding: 1rem 0.5rem;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    user-select: none;
+    min-width: 50px;
+    border-right: 1px solid #4C566A;
+}
+
+#codeEditor {
+    flex: 1;
+    background: #2E3440;
+    color: #D8DEE9;
+    border: none;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+}
+
+#codeEditor::placeholder {
+    color: #4C566A;
+}
+
+.analysis-buttons {
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Results Panel */
+.results-panel {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.results-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.results-header h2 {
+    font-size: 1.2rem;
+    color: #2E3440;
+    margin-bottom: 1rem;
+}
+
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.tab:hover {
+    color: #2E3440;
+}
+
+.tab.active {
+    border-bottom-color: #5E81AC;
+    color: #2E3440;
+    font-weight: 600;
+}
+
+.results-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background: #ECEFF4;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content h3 {
+    font-size: 1rem;
+    color: #2E3440;
+    margin-bottom: 1rem;
+}
+
+.results-list {
+    background: white;
+    border-radius: 4px;
+    padding: 1rem;
+    min-height: 100px;
+}
+
+.placeholder {
+    color: #999;
+    text-align: center;
+    padding: 2rem;
+}
+
+.token-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #f8f9fa;
+    border-left: 3px solid #A3BE8C;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.error-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background: #fff5f5;
+    border-left: 3px solid #BF616A;
+    border-radius: 4px;
+}
+
+.error-item .error-type {
+    font-weight: 600;
+    color: #BF616A;
+}
+
+.error-item .error-line {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn-primary {
+    background: #5E81AC;
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: #4c6a8f;
+}
+
+.btn-success {
+    background: #A3BE8C;
+    color: #2E3440;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+    grid-column: span 2;
+}
+
+.btn-success:hover {
+    background: #8fa876;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #5E81AC;
+    border: 1px solid #5E81AC;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: #5E81AC;
+    color: white;
+}
+
+/* Status Bar */
+.status-bar {
+    background: #2E3440;
+    color: #D8DEE9;
+    padding: 0.75rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+#status.success {
+    color: #A3BE8C;
+}
+
+#status.error {
+    color: #BF616A;
+}
+
+#status.loading {
+    color: #EBCB8B;
+}
+
+/* Loading Animation */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading::before {
+    content: "⟳ ";
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
