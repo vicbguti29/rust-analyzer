@@ -8,32 +8,152 @@ Debe borrar todos los textos resaltados de amarillo. Lo que esté como avance 1,
 
 **1\. Introducción**
 
-- Debe redactar una introducción de 3-4 párrafos que incluyan los siguientes temas
-  - Describa el lenguaje de programación asignado (dart, ruby, php, go, c#, lua, kotlin, etc) y sus características en diseño de sintaxis, curva de aprendizaje, comunidad y tipos de aplicaciones. Utilice la documentación oficial del LP.
-  - Describa la herramienta PLY (Lex y Yacc). Utilice la documentación oficial.
-- Debe leerse como una introducción de proyecto. **No enliste cada párrafo**.
+Rust es un lenguaje de programación de sistemas moderno que enfatiza la seguridad de memoria, el rendimiento y la concurrencia sin comprometer la velocidad de ejecución. Desarrollado originalmente por Mozilla Research y actualmente mantenido por la Rust Foundation, este lenguaje ha experimentado un crecimiento exponencial en su adopción, siendo el primer lenguaje además de C y ensamblador en ser soportado oficialmente en el desarrollo del kernel de Linux. Su diseño sintáctico combina elementos de programación funcional, como inmutabilidad por defecto, funciones de orden superior y pattern matching, con características de programación orientada a objetos mediante structs, enums, traits y métodos. Rust cuenta con características modernas como inferencia de tipos, abstracciones de costo cero, un poderoso sistema de macros y un gestor de paquetes integrado llamado Cargo, lo que lo convierte en una opción atractiva para el desarrollo de aplicaciones que requieren alto rendimiento y confiabilidad.
+
+La curva de aprendizaje de Rust es notablemente pronunciada, especialmente durante los primeros dos meses, donde los desarrolladores deben familiarizarse con conceptos únicos como el sistema de ownership, borrowing y lifetimes. Según estudios recientes, se requieren entre 3 a 6 meses para alcanzar productividad desde un background de programación de sistemas, y de 6 a 12 meses para desarrolladores provenientes de lenguajes de alto nivel. Sin embargo, la comunidad de Rust es reconocida por su excelente documentación oficial, tutoriales detallados y un ecosistema robusto con más de 80,000 crates disponibles en crates.io. En 2025, la adopción de Rust ha penetrado ecosistemas empresariales importantes, con Microsoft, Google y AWS contribuyendo activamente al lenguaje e integrándolo en sus productos, especialmente en componentes de sistemas operativos, navegadores web y aplicaciones cloud-native.
+
+Las aplicaciones de Rust abarcan un amplio espectro tecnológico, destacándose en programación de sistemas, desarrollo web mediante frameworks como Actix Web, Rocket y Warp, infraestructura blockchain, dispositivos IoT, desarrollo de videojuegos, y computación científica. Su capacidad para compilar a WebAssembly (Wasm) ha abierto nuevas posibilidades para construir aplicaciones que se ejecutan nativamente en navegadores con rendimiento cercano a C. Actualmente, el 29.2% de los desarrolladores que no trabajan con Rust expresan interés en adoptarlo, y aproximadamente 709,000 desarrolladores lo consideran su lenguaje principal según encuestas de JetBrains en 2024.
+
+Para el desarrollo de este proyecto de análisis léxico, sintáctico y semántico, se utilizará PLY (Python Lex-Yacc), una implementación 100% Python de las herramientas tradicionales lex y yacc utilizadas comúnmente para escribir analizadores y compiladores. PLY está basado en el mismo algoritmo de parsing LALR(1) utilizado por yacc y proporciona la mayoría de las características estándar incluyendo soporte para producciones vacías, reglas de precedencia, recuperación de errores y manejo de gramáticas ambiguas. Aunque PLY ya no recibe actualizaciones como paquete instalable vía pip, continúa siendo mantenido y modernizado, siendo compatible con todas las versiones modernas de Python sin requerir dependencias externas. Su documentación oficial está disponible en https://ply.readthedocs.io/ y el código fuente en GitHub, proporcionando una base sólida y bien documentada para implementar analizadores sintácticos de manera eficiente y educativa.
 
 **2\. Objetivos del Proyecto**
 
-- Lista detallada de las funcionalidades de su proyecto, utilizando el formato \[Verbo\] + \[Objeto\] + \[Condición\] (Ejemplo: "El sistema permitirá a un usuario crear una denuncia adjuntando evidencia fotográfica").
-- Un objetivo general y 3 objetivos específicos serían suficientes.
+**Objetivo General**
+
+Desarrollar un analizador léxico, sintáctico y semántico completo para el lenguaje de programación Rust utilizando PLY (Python Lex-Yacc), integrando una interfaz web interactiva que permita a los usuarios analizar código fuente, visualizar tokens identificados, detectar errores de sintaxis y semántica, y generar logs detallados de cada análisis realizado.
+
+**Objetivos Específicos**
+
+1. Implementar un analizador léxico capaz de tokenizar código Rust identificando palabras reservadas, operadores, delimitadores, literales y tipos de datos, generando mensajes personalizados para tokens inválidos y registrando cada análisis en archivos de log con formato estandarizado.
+
+2. Diseñar y construir un analizador sintáctico basado en gramáticas BNF que valide la estructura del código Rust, incluyendo declaraciones de variables, estructuras de control, funciones, expresiones aritméticas y booleanas, generando un árbol sintáctico abstracto (AST) y reportando errores de sintaxis con indicación precisa de línea y descripción del problema.
+
+3. Desarrollar un analizador semántico que verifique reglas del lenguaje como tipos de datos, declaración previa de variables, alcance de variables (scope), mutabilidad, y retorno de funciones, proporcionando mensajes de error semántico categorizados y detallados.
+
+4. Crear una interfaz web moderna y funcional con editor de código integrado, visualización diferenciada por colores de tokens y errores según su tipo (léxico, sintáctico, semántico), y capacidad de exportar resultados y logs de análisis para facilitar la depuración y el aprendizaje del lenguaje Rust.
 
 **3\. Analizador Léxico**
 
 **Descripción General**
 
-- Describir las funcionalidades de su analizador léxico. Como requerimiento mínimo debe devolver los tokens válidos y de error, mensajes personalizados de errores encontrados.
+El analizador léxico implementado con PLY será capaz de procesar código fuente escrito en Rust y descomponerlo en una secuencia de tokens válidos, identificando cada elemento sintáctico del lenguaje. Las funcionalidades principales incluyen: (1) reconocimiento de palabras reservadas, identificadores, literales numéricos y de cadena, operadores y delimitadores; (2) identificación y marcado de tokens inválidos o no reconocidos con mensajes personalizados que indiquen el tipo de error y la línea donde ocurre; (3) generación de una lista completa de tokens encontrados con información detallada incluyendo tipo, valor y posición en el código; (4) manejo de comentarios de una línea y multilínea ignorándolos durante el análisis; (5) generación automática de archivos de log con formato estandarizado que registren cada análisis realizado, incluyendo desarrollador, fecha, hora, código analizado y tokens identificados. El analizador proporcionará retroalimentación visual diferenciada por colores en la interfaz web, mostrando tokens válidos en verde y errores léxicos en rojo.
 
 **Componentes Principales**
 
-Para este apartado pueden usar diferentes tablas para establecer un orden adecuado de la información.
+**Variables**
 
-- **Variables**: Cómo se escribe el nombre de las variables (patrón). Si en su LP existen otras variables, colocar todas las posibilidades.
-- **Tipos de datos**: Tipos primitivos que se soportan (enteros, flotantes, cadenas, booleanos, etc.), estructurados (elegir al menos 1 estructura de datos por cada integrante).
-- **Operadores**: Listado de operadores aritméticos, lógicos, de asignación, conectores lógicos, y su significado.
-- **Palabras Reservadas**: Listado de palabras reservadas del lenguaje (if, else, while, for, etc.) y su significado.
-- **Comentarios**: Especificar cómo se escriben los comentarios de una línea y múltiples líneas.
-- **Delimitadores**: Símbolos usados para delimitar bloques de código (puntos y comas, llaves, paréntesis, identación, etc).
+En Rust, los nombres de variables (identificadores) siguen el patrón: `[a-zA-Z_][a-zA-Z0-9_]*`, es decir, deben comenzar con una letra o guión bajo, seguido de letras, dígitos o guiones bajos. Rust utiliza convención snake_case para variables y funciones.
+
+| Tipo de Variable | Sintaxis | Ejemplo |
+|-----------------|----------|---------|
+| Variable inmutable | `let nombre = valor;` | `let x = 5;` |
+| Variable mutable | `let mut nombre = valor;` | `let mut count = 0;` |
+| Constante | `const NOMBRE: tipo = valor;` | `const MAX_SIZE: u32 = 100;` |
+| Variable estática | `static NOMBRE: tipo = valor;` | `static COUNTER: i32 = 0;` |
+
+**Tipos de Datos**
+
+| Categoría | Tipo | Descripción | Ejemplo |
+|-----------|------|-------------|---------|
+| **Primitivos** | | | |
+| Enteros con signo | `i8`, `i16`, `i32`, `i64`, `i128` | Enteros con signo de diferentes tamaños | `let n: i32 = -42;` |
+| Enteros sin signo | `u8`, `u16`, `u32`, `u64`, `u128` | Enteros positivos de diferentes tamaños | `let age: u8 = 25;` |
+| Punto flotante | `f32`, `f64` | Números decimales | `let pi: f64 = 3.14159;` |
+| Booleano | `bool` | Valores true o false | `let is_active: bool = true;` |
+| Carácter | `char` | Un carácter Unicode | `let letra: char = 'A';` |
+| Cadena | `str`, `String` | Cadenas de texto | `let msg: &str = "Hola";` |
+| **Estructurados** | | | |
+| Vector | `Vec<T>` | Lista dinámica de elementos del mismo tipo | `let nums: Vec<i32> = vec![1, 2, 3];` |
+| Array | `[T; N]` | Lista de tamaño fijo | `let arr: [i32; 3] = [1, 2, 3];` |
+| Tupla | `(T1, T2, ...)` | Colección de valores de diferentes tipos | `let tuple: (i32, f64) = (5, 3.14);` |
+| HashMap | `HashMap<K, V>` | Estructura clave-valor | `let mut map = HashMap::new();` |
+
+**Operadores**
+
+| Categoría | Operador | Significado | Ejemplo |
+|-----------|----------|-------------|---------|
+| **Aritméticos** | | | |
+| | `+` | Suma | `a + b` |
+| | `-` | Resta | `a - b` |
+| | `*` | Multiplicación | `a * b` |
+| | `/` | División | `a / b` |
+| | `%` | Módulo (residuo) | `a % b` |
+| **Comparación** | | | |
+| | `==` | Igual a | `a == b` |
+| | `!=` | Diferente de | `a != b` |
+| | `<` | Menor que | `a < b` |
+| | `<=` | Menor o igual que | `a <= b` |
+| | `>` | Mayor que | `a > b` |
+| | `>=` | Mayor o igual que | `a >= b` |
+| **Lógicos** | | | |
+| | `&&` | AND lógico | `a && b` |
+| | `||` | OR lógico | `a || b` |
+| | `!` | NOT lógico | `!a` |
+| **Asignación** | | | |
+| | `=` | Asignación simple | `x = 5` |
+| | `+=` | Suma y asigna | `x += 3` |
+| | `-=` | Resta y asigna | `x -= 2` |
+| | `*=` | Multiplica y asigna | `x *= 4` |
+| | `/=` | Divide y asigna | `x /= 2` |
+| **Otros** | | | |
+| | `&` | Referencia | `&x` |
+| | `*` | Dereferencia | `*ptr` |
+| | `::` | Resolución de ruta | `std::io::stdin()` |
+| | `->` | Tipo de retorno | `fn suma() -> i32` |
+| | `=>` | Brazo de match | `Some(x) => x` |
+
+**Palabras Reservadas**
+
+| Palabra | Significado | Categoría |
+|---------|-------------|-----------|
+| `fn` | Declaración de función | Función |
+| `let` | Declaración de variable inmutable | Variable |
+| `mut` | Modificador de mutabilidad | Variable |
+| `const` | Declaración de constante | Variable |
+| `static` | Variable estática | Variable |
+| `if` | Estructura condicional | Control |
+| `else` | Alternativa de condicional | Control |
+| `match` | Coincidencia de patrones | Control |
+| `while` | Bucle condicional | Control |
+| `for` | Bucle iterativo | Control |
+| `loop` | Bucle infinito | Control |
+| `break` | Salir de bucle | Control |
+| `continue` | Siguiente iteración | Control |
+| `return` | Retornar valor de función | Control |
+| `struct` | Definir estructura | Tipo |
+| `enum` | Definir enumeración | Tipo |
+| `impl` | Implementar métodos | Tipo |
+| `trait` | Definir rasgo (interfaz) | Tipo |
+| `type` | Alias de tipo | Tipo |
+| `pub` | Modificador de visibilidad pública | Modificador |
+| `use` | Importar módulo/elemento | Módulo |
+| `mod` | Declarar módulo | Módulo |
+| `as` | Renombrar importación/casting | Operador |
+| `in` | Pertenencia en iterador | Operador |
+| `true` | Valor booleano verdadero | Literal |
+| `false` | Valor booleano falso | Literal |
+
+**Comentarios**
+
+| Tipo | Sintaxis | Ejemplo |
+|------|----------|---------|
+| Comentario de línea | `// comentario` | `// Esto es un comentario` |
+| Comentario multilínea | `/* comentario */` | `/* Comentario en<br>múltiples líneas */` |
+| Comentario de documentación | `/// comentario` | `/// Documenta la función` |
+| Comentario de doc multilínea | `/** comentario **/` | `/** Documentación<br>detallada **/` |
+
+**Delimitadores**
+
+| Símbolo | Nombre | Uso |
+|---------|--------|-----|
+| `;` | Punto y coma | Terminar declaraciones |
+| `{ }` | Llaves | Delimitar bloques de código |
+| `( )` | Paréntesis | Agrupar expresiones, parámetros de funciones |
+| `[ ]` | Corchetes | Definir arrays, indexar colecciones |
+| `,` | Coma | Separar elementos en listas |
+| `.` | Punto | Acceder a campos/métodos |
+| `:` | Dos puntos | Especificar tipos |
+| `::` | Doble dos puntos | Acceder a elementos de módulos/tipos |
 
 **4\. Analizador Sintáctico**
 
