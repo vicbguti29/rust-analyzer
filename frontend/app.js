@@ -95,13 +95,21 @@ const MOCK_DATA = {
         errors: [
             {
                 type: 'Error Léxico',
+                category: 'lexico',
                 message: 'Token no reconocido: \'@\'',
                 line: 2
             },
             {
                 type: 'Error Sintáctico',
-                message: 'Se esperaba identificador después de "fn"',
-                line: 1
+                category: 'sintactico',
+                message: 'Se esperaba punto y coma al final de la declaración',
+                line: 3
+            },
+            {
+                type: 'Error Semántico',
+                category: 'semantico',
+                message: 'Variable \'y\' no declarada antes de su uso',
+                line: 4
             }
         ],
         log_file: 'error-demo-24-10-2025-15:34.txt'
@@ -264,7 +272,9 @@ function displayResults(data, type) {
         errorsList.innerHTML = '';
         data.errors.forEach(error => {
             const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-item';
+            // Aplicar clase según categoría de error
+            const category = error.category || 'lexico';
+            errorDiv.className = `error-item error-${category}`;
             errorDiv.innerHTML = `
                 <div class="error-type">${error.type || 'Error'}</div>
                 <div class="error-line">Línea ${error.line || 'N/A'}: ${error.message}</div>
@@ -318,15 +328,62 @@ function updateLogInfo(logFile) {
 
 // ========== MENÚ ==========
 document.getElementById('menuArchivo').addEventListener('click', () => {
-    alert('Menú Archivo: Funcionalidad en desarrollo');
+    const option = prompt(
+        'Menú Archivo:\n' +
+        '1 - Cargar ejemplo básico\n' +
+        '2 - Cargar ejemplo con errores\n' +
+        '3 - Limpiar editor\n\n' +
+        'Ingrese opción:'
+    );
+
+    if (option === '1') {
+        codeEditor.value = `fn main() {
+    let x = 5;
+    println!("Hola, mundo!");
+}`;
+        updateLineNumbers();
+        updateStatus('Ejemplo básico cargado', 'success');
+    } else if (option === '2') {
+        codeEditor.value = `fn main() {
+    let x = 5
+    let @ = invalid;
+    println!("{}", y);
+}`;
+        updateLineNumbers();
+        updateStatus('Ejemplo con errores cargado - Ejecuta análisis para verlos', 'success');
+
+        // Automáticamente mostrar los errores de ejemplo
+        setTimeout(() => {
+            displayResults(MOCK_DATA.error_example, 'completo');
+        }, 500);
+    } else if (option === '3') {
+        codeEditor.value = '';
+        updateLineNumbers();
+        clearResults();
+        updateStatus('Editor limpio', 'success');
+    }
 });
 
 document.getElementById('menuAnalisis').addEventListener('click', () => {
-    alert('Menú Análisis: Funcionalidad en desarrollo');
+    alert(
+        '🎨 Indicadores Visuales:\n\n' +
+        '🔴 Rojo - Errores Léxicos\n' +
+        '🟡 Amarillo - Errores Sintácticos\n' +
+        '🟣 Morado - Errores Semánticos\n' +
+        '🟢 Verde - Tokens válidos\n\n' +
+        'Usa "Archivo > Cargar ejemplo con errores" para ver los indicadores en acción'
+    );
 });
 
 document.getElementById('menuAyuda').addEventListener('click', () => {
-    alert('Analizador Léxico, Sintáctico y Semántico para Rust\nDesarrollado con FastAPI + PLY');
+    alert(
+        'Analizador Léxico, Sintáctico y Semántico para Rust\n' +
+        'Desarrollado con FastAPI + PLY\n\n' +
+        '📌 MODO DEMO ACTIVO\n' +
+        'Los resultados son simulados con datos mock\n\n' +
+        '💡 Prueba "Archivo > Cargar ejemplo con errores"\n' +
+        'para ver los indicadores visuales de colores'
+    );
 });
 
 // Inicializar

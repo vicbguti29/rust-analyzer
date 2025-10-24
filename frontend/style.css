@@ -230,9 +230,36 @@ nav button:hover {
     border-radius: 4px;
 }
 
+.error-item.error-lexico {
+    background: #fff5f5;
+    border-left-color: #BF616A;
+}
+
+.error-item.error-sintactico {
+    background: #fff9f0;
+    border-left-color: #EBCB8B;
+}
+
+.error-item.error-semantico {
+    background: #f5f0ff;
+    border-left-color: #B48EAD;
+}
+
 .error-item .error-type {
     font-weight: 600;
+    color: inherit;
+}
+
+.error-item.error-lexico .error-type {
     color: #BF616A;
+}
+
+.error-item.error-sintactico .error-type {
+    color: #EBCB8B;
+}
+
+.error-item.error-semantico .error-type {
+    color: #B48EAD;
 }
 
 .error-item .error-line {
