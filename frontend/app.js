@@ -2,7 +2,7 @@
 const API_BASE_URL = 'http://localhost:8000';
 
 // Modo demo con datos mock
-const DEMO_MODE = true; // Cambiar a false cuando el backend esté disponible
+const DEMO_MODE = false; // Cambiar a false cuando el backend esté disponible
 
 // Datos mock para demostración
 const MOCK_DATA = {
@@ -203,8 +203,8 @@ async function executeAnalysis(type) {
 
     updateStatus(`Ejecutando análisis ${type}...`, 'loading');
 
-    // Si está en modo demo, usar datos mock
-    if (DEMO_MODE) {
+    // Si está en modo demo (y no es 'lexico'), usar datos mock
+    if (DEMO_MODE && type !== 'lexico') {
         await simulateDelay(800); // Simular tiempo de procesamiento
         const data = MOCK_DATA[type];
         displayResults(data, type);

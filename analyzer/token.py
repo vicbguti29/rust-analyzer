@@ -1,5 +1,35 @@
 from dataclasses import dataclass
 
+class TokenType:
+    # Keywords & Identifiers
+    IDENT = "IDENT"
+    LET = "LET"
+    FN = "FN"
+    MUT = "MUT"
+    
+    # Literals
+    NUMBER = "NUMBER"
+    STRING = "STRING"
+
+    # Operators
+    ASSIGN = "="
+    PLUS = "+"
+    MINUS = "-"
+    STAR = "*"
+    SLASH = "/"
+
+    # Delimiters
+    LPAREN = "("
+    RPAREN = ")"
+    LBRACE = "{"
+    RBRACE = "}"
+    COMMA = ","
+    SEMICOLON = ";"
+
+    # Control
+    EOF = "EOF"
+    ERROR = "ERROR"
+
 
 @dataclass
 class Token:
