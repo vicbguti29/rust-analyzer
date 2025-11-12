@@ -164,7 +164,7 @@ function updateLineNumbers() {
 
 codeEditor.addEventListener('input', updateLineNumbers);
 codeEditor.addEventListener('scroll', () => {
-    lineNumbers.scrollTop = codeEditor.scrollTop;
+    lineNumbers.style.transform = `translateY(-${codeEditor.scrollTop}px)`;
 });
 
 // ========== MANEJO DE ARCHIVOS ==========

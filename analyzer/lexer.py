@@ -3,9 +3,50 @@ from analyzer.token import Token, TokenType
 
 class Lexer:
     KEYWORDS = {
-        "let": TokenType.LET,
+        # Control Flow
+        "if": TokenType.IF,
+        "else": TokenType.ELSE,
+        "while": TokenType.WHILE,
+        "for": TokenType.FOR,
+        "loop": TokenType.LOOP,
+        "break": TokenType.BREAK,
+        "continue": TokenType.CONTINUE,
+        "return": TokenType.RETURN,
+        # Functions and Variables
         "fn": TokenType.FN,
+        "let": TokenType.LET,
         "mut": TokenType.MUT,
+        "const": TokenType.CONST,
+        "static": TokenType.STATIC,
+        # Types
+        "i32": TokenType.I32,
+        "i64": TokenType.I64,
+        "u32": TokenType.U32,
+        "u64": TokenType.U64,
+        "f32": TokenType.F32,
+        "f64": TokenType.F64,
+        "bool": TokenType.BOOL,
+        "char": TokenType.CHAR,
+        "str": TokenType.STR,
+        "String": TokenType.STRING_TYPE,
+        # Structs and Modules
+        "struct": TokenType.STRUCT,
+        "enum": TokenType.ENUM,
+        "mod": TokenType.MOD,
+        "use": TokenType.USE,
+        "pub": TokenType.PUB,
+        "self": TokenType.SELF,
+        "Self": TokenType.SELF_TYPE,
+        # Traits and Implementation
+        "trait": TokenType.TRAIT,
+        "impl": TokenType.IMPL,
+        "where": TokenType.WHERE,
+        # Memory and Collections
+        "Box": TokenType.BOX,
+        "Vec": TokenType.VEC,
+        "Option": TokenType.OPTION,
+        "Some": TokenType.SOME,
+        "None": TokenType.NONE,
     }
 
     def __init__(self, source: str):
@@ -150,12 +191,27 @@ class Lexer:
             if self.char == '"':
                 return self._scan_string()
 
+            if self.char == ':':
+                if self._peek() == ':':
+                    self._advance()
+                    self._advance()
+                    return Token(TokenType.SCOPE, "::", start_line, start_column)
+
+            if self.char == '-':
+                if self._peek() == '>':
+                    self._advance()
+                    self._advance()
+                    return Token(TokenType.ARROW, "->", start_line, start_column)
+
             token_map = {
                 '=': TokenType.ASSIGN, '+': TokenType.PLUS,
-                ';': TokenType.SEMICOLON, '(': TokenType.LPAREN,
-                ')': TokenType.RPAREN, '{': TokenType.LBRACE,
-                '}': TokenType.RBRACE, '*': TokenType.STAR,
-                '/': TokenType.SLASH,
+                '-': TokenType.MINUS, ';': TokenType.SEMICOLON,
+                '(': TokenType.LPAREN, ')': TokenType.RPAREN,
+                '{': TokenType.LBRACE, '}': TokenType.RBRACE,
+                '*': TokenType.STAR, '/': TokenType.SLASH,
+                ',': TokenType.COMMA, ':': TokenType.COLON,
+                '<': TokenType.LT, '>': TokenType.GT,
+                '&': TokenType.AMPERSAND,
             }
             if self.char in token_map:
                 lexeme = self.char

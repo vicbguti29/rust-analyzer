@@ -1,13 +1,58 @@
 from dataclasses import dataclass
 
 class TokenType:
-    # Keywords & Identifiers
-    IDENT = "IDENT"
-    LET = "LET"
-    FN = "FN"
-    MUT = "MUT"
+    # Control Flow
+    IF = "IF"
+    ELSE = "ELSE"
+    WHILE = "WHILE"
+    FOR = "FOR"
+    LOOP = "LOOP"
+    BREAK = "BREAK"
+    CONTINUE = "CONTINUE"
+    RETURN = "RETURN"
     
-    # Literals
+    # Functions and Variables
+    FN = "FN"
+    LET = "LET"
+    MUT = "MUT"
+    CONST = "CONST"
+    STATIC = "STATIC"
+
+    # Types
+    I32 = "I32"
+    I64 = "I64"
+    U32 = "U32"
+    U64 = "U64"
+    F32 = "F32"
+    F64 = "F64"
+    BOOL = "BOOL"
+    CHAR = "CHAR"
+    STR = "STR"
+    STRING_TYPE = "STRING_TYPE"
+
+    # Structs and Modules
+    STRUCT = "STRUCT"
+    ENUM = "ENUM"
+    MOD = "MOD"
+    USE = "USE"
+    PUB = "PUB"
+    SELF = "SELF"
+    SELF_TYPE = "SELF_TYPE"
+
+    # Traits and Implementation
+    TRAIT = "TRAIT"
+    IMPL = "IMPL"
+    WHERE = "WHERE"
+
+    # Memory and Collections
+    BOX = "BOX"
+    VEC = "VEC"
+    OPTION = "OPTION"
+    SOME = "SOME"
+    NONE = "NONE"
+
+    # Identifiers and Literals
+    IDENT = "IDENT"
     NUMBER = "NUMBER"
     STRING = "STRING"
 
@@ -17,6 +62,11 @@ class TokenType:
     MINUS = "-"
     STAR = "*"
     SLASH = "/"
+    ARROW = "->"
+    AMPERSAND = "&"
+    LT = "<"
+    GT = ">"
+    SCOPE = "::"
 
     # Delimiters
     LPAREN = "("
@@ -25,6 +75,7 @@ class TokenType:
     RBRACE = "}"
     COMMA = ","
     SEMICOLON = ";"
+    COLON = ":"
 
     # Control
     EOF = "EOF"

@@ -1,5 +1,5 @@
 // test_lexer.rs
-// Código de prueba con sintaxis de Rust
+// Código de prueba con sintaxis de Rust (VICTOR BORBOR)
 
 // Módulo y uso de tipos
 mod math {

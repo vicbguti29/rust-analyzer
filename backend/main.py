@@ -30,7 +30,7 @@ app.add_middleware(
 # Modelos de datos
 class CodeInput(BaseModel):
     code: str
-    developer: str = "anonymous"
+    developer: str = "Alvasconv" # MODIFICAR PARA QUE SE REGISTREN QUIEN REALIZO LAS PRUEBAS
 
 class TokenOutput(BaseModel):
     type: str
