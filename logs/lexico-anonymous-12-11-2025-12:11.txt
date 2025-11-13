@@ -1,0 +1,224 @@
+=== ANÁLISIS LÉXICO ===
+Desarrollador: anonymous
+Fecha: 12-11-2025 12:11:36
+
+CÓDIGO:
+mod math {
+    pub fn calculate(x: i32) -> i32 {
+        return x * 2;
+    }
+}
+
+use std::vec::Vec;
+
+// Definici¾n de struct y enum
+struct Point {
+    x: f64,
+    y: f64
+}
+
+enum Option<T> {
+    Some(T),
+    None
+}
+
+// Implementaci¾n de trait
+trait Shape {
+    fn area(&self) -> f64;
+}
+
+// Funci¾n principal con control de flujo
+fn main() {
+    // Variables y tipos
+    let mut count: i32 = 0;
+    let pi: f64 = 3.14;
+    const MAX_POINTS: u32 = 100;
+    
+    // Estructuras de control
+    if count < 10 {
+        count += 1;
+    } else {
+        count = 0;
+    }
+
+    // Loop y break
+    loop {
+        if count >= MAX_POINTS {
+            break;
+        }
+        count += 1;
+    }
+
+    // Vector y Option
+    let mut numbers: Vec<i32> = Vec::new();
+    let maybe_number: Option<i32> = Some(42);
+    
+    // String con escapes
+    let message = "Hello \"Rust\" world!\n";
+}
+
+TOKENS:
+  MOD                  | mod                            | Línea 1
+  IDENT                | math                           | Línea 1
+  {                    | {                              | Línea 1
+  PUB                  | pub                            | Línea 2
+  FN                   | fn                             | Línea 2
+  IDENT                | calculate                      | Línea 2
+  (                    | (                              | Línea 2
+  IDENT                | x                              | Línea 2
+  :                    | :                              | Línea 2
+  I32                  | i32                            | Línea 2
+  )                    | )                              | Línea 2
+  ->                   | ->                             | Línea 2
+  I32                  | i32                            | Línea 2
+  {                    | {                              | Línea 2
+  RETURN               | return                         | Línea 3
+  IDENT                | x                              | Línea 3
+  *                    | *                              | Línea 3
+  NUMBER               | 2                              | Línea 3
+  ;                    | ;                              | Línea 3
+  }                    | }                              | Línea 4
+  }                    | }                              | Línea 5
+  USE                  | use                            | Línea 7
+  IDENT                | std                            | Línea 7
+  ::                   | ::                             | Línea 7
+  IDENT                | vec                            | Línea 7
+  ::                   | ::                             | Línea 7
+  VEC                  | Vec                            | Línea 7
+  ;                    | ;                              | Línea 7
+  STRUCT               | struct                         | Línea 10
+  IDENT                | Point                          | Línea 10
+  {                    | {                              | Línea 10
+  IDENT                | x                              | Línea 11
+  :                    | :                              | Línea 11
+  F64                  | f64                            | Línea 11
+  ,                    | ,                              | Línea 11
+  IDENT                | y                              | Línea 12
+  :                    | :                              | Línea 12
+  F64                  | f64                            | Línea 12
+  }                    | }                              | Línea 13
+  ENUM                 | enum                           | Línea 15
+  OPTION               | Option                         | Línea 15
+  <                    | <                              | Línea 15
+  IDENT                | T                              | Línea 15
+  >                    | >                              | Línea 15
+  {                    | {                              | Línea 15
+  SOME                 | Some                           | Línea 16
+  (                    | (                              | Línea 16
+  IDENT                | T                              | Línea 16
+  )                    | )                              | Línea 16
+  ,                    | ,                              | Línea 16
+  NONE                 | None                           | Línea 17
+  }                    | }                              | Línea 18
+  TRAIT                | trait                          | Línea 21
+  IDENT                | Shape                          | Línea 21
+  {                    | {                              | Línea 21
+  FN                   | fn                             | Línea 22
+  IDENT                | area                           | Línea 22
+  (                    | (                              | Línea 22
+  &                    | &                              | Línea 22
+  SELF                 | self                           | Línea 22
+  )                    | )                              | Línea 22
+  ->                   | ->                             | Línea 22
+  F64                  | f64                            | Línea 22
+  ;                    | ;                              | Línea 22
+  }                    | }                              | Línea 23
+  FN                   | fn                             | Línea 26
+  IDENT                | main                           | Línea 26
+  (                    | (                              | Línea 26
+  )                    | )                              | Línea 26
+  {                    | {                              | Línea 26
+  LET                  | let                            | Línea 28
+  MUT                  | mut                            | Línea 28
+  IDENT                | count                          | Línea 28
+  :                    | :                              | Línea 28
+  I32                  | i32                            | Línea 28
+  =                    | =                              | Línea 28
+  NUMBER               | 0                              | Línea 28
+  ;                    | ;                              | Línea 28
+  LET                  | let                            | Línea 29
+  IDENT                | pi                             | Línea 29
+  :                    | :                              | Línea 29
+  F64                  | f64                            | Línea 29
+  =                    | =                              | Línea 29
+  NUMBER               | 3.14                           | Línea 29
+  ;                    | ;                              | Línea 29
+  CONST                | const                          | Línea 30
+  IDENT                | MAX_POINTS                     | Línea 30
+  :                    | :                              | Línea 30
+  U32                  | u32                            | Línea 30
+  =                    | =                              | Línea 30
+  NUMBER               | 100                            | Línea 30
+  ;                    | ;                              | Línea 30
+  IF                   | if                             | Línea 33
+  IDENT                | count                          | Línea 33
+  <                    | <                              | Línea 33
+  NUMBER               | 10                             | Línea 33
+  {                    | {                              | Línea 33
+  IDENT                | count                          | Línea 34
+  +                    | +                              | Línea 34
+  =                    | =                              | Línea 34
+  NUMBER               | 1                              | Línea 34
+  ;                    | ;                              | Línea 34
+  }                    | }                              | Línea 35
+  ELSE                 | else                           | Línea 35
+  {                    | {                              | Línea 35
+  IDENT                | count                          | Línea 36
+  =                    | =                              | Línea 36
+  NUMBER               | 0                              | Línea 36
+  ;                    | ;                              | Línea 36
+  }                    | }                              | Línea 37
+  LOOP                 | loop                           | Línea 40
+  {                    | {                              | Línea 40
+  IF                   | if                             | Línea 41
+  IDENT                | count                          | Línea 41
+  >                    | >                              | Línea 41
+  =                    | =                              | Línea 41
+  IDENT                | MAX_POINTS                     | Línea 41
+  {                    | {                              | Línea 41
+  BREAK                | break                          | Línea 42
+  ;                    | ;                              | Línea 42
+  }                    | }                              | Línea 43
+  IDENT                | count                          | Línea 44
+  +                    | +                              | Línea 44
+  =                    | =                              | Línea 44
+  NUMBER               | 1                              | Línea 44
+  ;                    | ;                              | Línea 44
+  }                    | }                              | Línea 45
+  LET                  | let                            | Línea 48
+  MUT                  | mut                            | Línea 48
+  IDENT                | numbers                        | Línea 48
+  :                    | :                              | Línea 48
+  VEC                  | Vec                            | Línea 48
+  <                    | <                              | Línea 48
+  I32                  | i32                            | Línea 48
+  >                    | >                              | Línea 48
+  =                    | =                              | Línea 48
+  VEC                  | Vec                            | Línea 48
+  ::                   | ::                             | Línea 48
+  IDENT                | new                            | Línea 48
+  (                    | (                              | Línea 48
+  )                    | )                              | Línea 48
+  ;                    | ;                              | Línea 48
+  LET                  | let                            | Línea 49
+  IDENT                | maybe_number                   | Línea 49
+  :                    | :                              | Línea 49
+  OPTION               | Option                         | Línea 49
+  <                    | <                              | Línea 49
+  I32                  | i32                            | Línea 49
+  >                    | >                              | Línea 49
+  =                    | =                              | Línea 49
+  SOME                 | Some                           | Línea 49
+  (                    | (                              | Línea 49
+  NUMBER               | 42                             | Línea 49
+  )                    | )                              | Línea 49
+  ;                    | ;                              | Línea 49
+  LET                  | let                            | Línea 52
+  IDENT                | message                        | Línea 52
+  =                    | =                              | Línea 52
+  STRING               | "Hello \"Rust\" world!\n"      | Línea 52
+  ;                    | ;                              | Línea 52
+  }                    | }                              | Línea 53
+  EOF                  |                                | Línea 53
+
+✓ Análisis léxico completado sin errores

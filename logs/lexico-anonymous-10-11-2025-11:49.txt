@@ -1,0 +1,14 @@
+=== ANÁLISIS LÉXICO ===
+Desarrollador: anonymous
+Fecha: 10-11-2025 11:49:43
+
+CÓDIGO:
+fn main() {
+    let x = 5;
+    println!("Hola, mundo!");
+}
+
+TOKENS:
+  EOF                  |                                | Línea 1
+
+✓ Análisis léxico completado sin errores
