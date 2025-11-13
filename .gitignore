@@ -37,8 +37,8 @@ env/
 .DS_Store
 
 # Logs
-logs/*.txt
-*.log
+#logs/*.txt
+#*.log
 
 # PLY generated files
 parser.out
