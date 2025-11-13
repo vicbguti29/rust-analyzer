@@ -31,6 +31,8 @@ tokens = (
     "CHAR",
     "STR",
     "STRING_TYPE",
+    "TRUE",
+    "FALSE",
     # Palabras clave de estructura y módulos
     "STRUCT",
     "ENUM",
@@ -49,6 +51,10 @@ tokens = (
     "OPTION",
     "SOME",
     "NONE",
+    # Palabras clave de I/O
+    "PRINTLN",
+    "INPUT",
+    "IN",
     # Identificadores y literales
     "IDENT",  # identificadores
     "NUMBER",  # números enteros
@@ -61,12 +67,30 @@ tokens = (
     "DIVIDE",  # /
     "EQUALS",  # =
     "ARROW",  # ->
+    # Operadores de comparación
+    "EQ",  # ==
+    "NEQ",  # !=
+    "LT",  # <
+    "LTE",  # <=
+    "GT",  # >
+    "GTE",  # >=
+    # Operadores lógicos
+    "AND",  # &&
+    "OR",  # ||
+    "NOT",  # !
+    # Operadores de asignación compuesta
+    "PLUS_EQUALS",  # +=
+    "MINUS_EQUALS",  # -=
+    "TIMES_EQUALS",  # *=
+    "DIVIDE_EQUALS",  # /=
     # Delimitadores
     "LPAREN",  # (
     "RPAREN",  # )
     "LBRACE",  # {
     "RBRACE",  # }
     "SEMICOLON",  # ;
+    "COLON",  # :
+    "COMMA",  # ,
     # Comentarios
     "COMMENT",  # // comentarios
 )
@@ -99,6 +123,8 @@ reserved = {
     "char": "CHAR",
     "str": "STR",
     "String": "STRING_TYPE",
+    "true": "TRUE",
+    "false": "FALSE",
     # Keywords de estructura y módulos
     "struct": "STRUCT",
     "enum": "ENUM",
@@ -117,20 +143,72 @@ reserved = {
     "Option": "OPTION",
     "Some": "SOME",
     "None": "NONE",
+    # Keywords de I/O
+    "println": "PRINTLN",
+    "input": "INPUT",
+    "in": "IN",
 }
 
-# Reglas regex para tokens simples
+# Reglas regex para tokens simples (deben definirse antes de otros que usan los mismos caracteres)
+def t_ARROW(t):
+    r'->'
+    return t
+
+def t_EQ(t):
+    r'=='
+    return t
+
+def t_NEQ(t):
+    r'!='
+    return t
+
+def t_LTE(t):
+    r'<='
+    return t
+
+def t_GTE(t):
+    r'>='
+    return t
+
+def t_PLUS_EQUALS(t):
+    r'\+='
+    return t
+
+def t_MINUS_EQUALS(t):
+    r'-='
+    return t
+
+def t_TIMES_EQUALS(t):
+    r'\*='
+    return t
+
+def t_DIVIDE_EQUALS(t):
+    r'/='
+    return t
+
+def t_AND(t):
+    r'&&'
+    return t
+
+def t_OR(t):
+    r'\|\|'
+    return t
+
 t_PLUS = r"\+"
 t_MINUS = r"-"
 t_TIMES = r"\*"
 t_DIVIDE = r"/"
 t_EQUALS = r"="
-t_ARROW = r"->"
 t_LPAREN = r"\("
 t_RPAREN = r"\)"
 t_LBRACE = r"{"
 t_RBRACE = r"}"
 t_SEMICOLON = r";"
+t_COLON = r":"
+t_COMMA = r","
+t_NOT = r"!"
+t_LT = r"<"
+t_GT = r">"
 
 
 # Reglas con código de acción
@@ -155,8 +233,14 @@ def t_number(t):
 
 
 def t_string(t):
-    r"\"([^\\\n]|(\\.))*?\" "
+    r"\"([^\\\n]|(\\.))*?\""
     t.type = "STRING"
+    return t
+
+
+def t_char(t):
+    r"'([^'\\\n]|\\.)'"
+    t.type = "CHAR"
     return t
 
 
