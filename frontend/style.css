@@ -105,7 +105,7 @@ nav button:hover {
     line-height: 1.5;
     user-select: none;
     min-width: 50px;
-    border-right: 1px solid #4C566A;
+    white-space: pre-wrap;
 }
 
 #codeEditor {
@@ -113,6 +113,7 @@ nav button:hover {
     background: #2E3440;
     color: #D8DEE9;
     border: none;
+    border-left: 1px solid #4C566A;
     padding: 1rem;
     font-family: 'Courier New', monospace;
     font-size: 14px;

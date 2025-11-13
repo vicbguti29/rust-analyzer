@@ -14,13 +14,22 @@ Proyecto de análisis de código Rust utilizando PLY (Python Lex-Yacc) con inter
 ## 📁 Estructura del Proyecto
 
 ```
-proj-01/
+rust-analyzer/
 ├── frontend/         # Interfaz web (HTML/CSS/JS)
 ├── backend/          # API REST con FastAPI
 ├── analyzer/         # Módulos de análisis PLY
 ├── logs/            # Logs generados por análisis
 └── docs/            # Documentación del proyecto
 ```
+### Algortimos de prueba
+
+**ubicación:** rust-analyzer/analyzer
+```
+analyzer/
+├── algoritmo_de_prueba.rs   # Algoritmo de prueba de Angello Vasconez
+├── test_lexer.rs            # Algortimo de prueba de Victor Borbor
+```
+
 
 ## 🛠️ Tecnologías
 

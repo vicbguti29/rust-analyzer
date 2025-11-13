@@ -8,7 +8,7 @@ import sys
 # Agregar el directorio analyzer al path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from analyzer.lexer import RustLexer
+from analyzer.lexer import Lexer
 # from analyzer.parser import RustParser
 # from analyzer.semantic import SemanticAnalyzer
 
@@ -30,7 +30,7 @@ app.add_middleware(
 # Modelos de datos
 class CodeInput(BaseModel):
     code: str
-    developer: str = "anonymous"
+    developer: str = "Alvasconv" # MODIFICAR PARA QUE SE REGISTREN QUIEN REALIZO LAS PRUEBAS
 
 class TokenOutput(BaseModel):
     type: str
@@ -80,8 +80,8 @@ async def root():
 async def analyze_lexico(input_data: CodeInput):
     """Ejecuta análisis léxico del código Rust"""
     try:
-        lexer = RustLexer()
-        tokens = lexer.tokenize(input_data.code)
+        lexer = Lexer(input_data.code)
+        tokens = lexer.tokenize()
 
         token_list = []
         error_list = []
@@ -94,17 +94,17 @@ async def analyze_lexico(input_data: CodeInput):
         for tok in tokens:
             token_list.append(TokenOutput(
                 type=tok.type,
-                value=str(tok.value),
-                line=tok.lineno
+                value=str(tok.lexeme),
+                line=tok.line
             ))
-            log_content += f"  {tok.type:20} | {tok.value:30} | Línea {tok.lineno}\n"
+            log_content += f"  {tok.type:20} | {tok.lexeme:30} | Línea {tok.line}\n"
 
             # Detectar tokens de error
             if tok.type == 'ERROR':
                 error_list.append(ErrorOutput(
                     type="Error Léxico",
-                    message=f"Token no reconocido: '{tok.value}'",
-                    line=tok.lineno
+                    message=str(tok.literal) if tok.literal else f"Token no reconocido: '{tok.lexeme}'",
+                    line=tok.line
                 ))
 
         if error_list:
