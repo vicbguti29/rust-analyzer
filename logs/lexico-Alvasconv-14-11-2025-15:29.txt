@@ -1,0 +1,14 @@
+=== ANÁLISIS LÉXICO (PLY) ===
+Desarrollador: Alvasconv
+Fecha: 14-11-2025 15:29:55
+
+CÓDIGO:
+println! [
+]
+
+TOKENS:
+  CONSOLE_PRINT        | println!                       | Línea 1
+  LBRACKET             | [                              | Línea 1
+  RBRACKET             | ]                              | Línea 2
+
+✓ Análisis léxico completado sin errores

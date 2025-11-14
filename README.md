@@ -23,13 +23,13 @@ rust-analyzer/
 ```
 ### Algortimos de prueba
 
-**ubicación:** rust-analyzer/analyzer
+**ubicación:** rust-analyzer/docs/algoritmos_de_prueba
 ```
-analyzer/
+algoritmos_de_prueba/
 ├── algoritmo_de_prueba.rs   # Algoritmo de prueba de Angello Vasconez
 ├── test_lexer.rs            # Algortimo de prueba de Victor Borbor
+├── test_sintactico.rs       # Algortimo de prueba para el analizador sintáctico
 ```
-
 
 ## 🛠️ Tecnologías
 
@@ -40,8 +40,9 @@ analyzer/
 
 ## 📖 Documentación
 
-- [Propuesta del Proyecto](statement.md)
+- [Propuesta del Proyecto](docs/statement.md)
 - [Arquitectura Técnica](docs/arquitectura.md)
+- [Manual del analizador léxico](docs/lexer/ply_lexer_manual.md)
 
 ## 🚦 Inicio Rápido
 
@@ -62,7 +63,7 @@ python -m http.server 3000
 
 ## 👥 Equipo
 
-Ver asignación de tareas en [statement.md](statement.md)
+Ver asignación de tareas en [statement.md](docs/statement.md)
 
 ## 📝 Licencia
 

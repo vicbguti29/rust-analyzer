@@ -3,27 +3,37 @@
 ## Estructura de Directorios
 
 ```
-proj-01/
-├── frontend/              # Interfaz web del usuario
-│   ├── index.html        # Estructura HTML de la aplicación
-│   ├── style.css         # Estilos y diseño visual
-│   └── app.js            # Lógica del cliente y comunicación con API
+rust-analyzer/
+├── frontend/                       # Interfaz web del usuario
+│   ├── index.html                  # Estructura HTML de la aplicación
+│   ├── style.css                   # Estilos y diseño visual
+│   └── app.js                      # Lógica del cliente y comunicación con API
+│         
+├── backend/                        # Servidor API REST
+│   ├── main.py                     # FastAPI server con endpoints de análisis
+│   └── requirements.txt            # Dependencias Python del backend
+│         
+├── analyzer/                       # Módulos de análisis (PLY)
+│   ├── lexer.py                    # Analizador léxico - Tokenización
+│   ├── parser.py                   # Analizador sintáctico - AST
+│   ├── semantic.py                 # Analizador semántico - Validaciones
+│   └── tests/                      # Casos de prueba de los analizadores
 │
-├── backend/              # Servidor API REST
-│   ├── main.py          # FastAPI server con endpoints de análisis
-│   └── requirements.txt  # Dependencias Python del backend
-│
-├── analyzer/             # Módulos de análisis (PLY)
-│   ├── lexer.py         # Analizador léxico - Tokenización
-│   ├── parser.py        # Analizador sintáctico - AST
-│   └── semantic.py      # Analizador semántico - Validaciones
-│
-├── logs/                 # Logs de análisis generados
+├── logs/                           # Logs de análisis generados
 │   └── [tipo]-[dev]-[fecha].txt
 │
-└── docs/                 # Documentación del proyecto
-    ├── statement.md      # Propuesta del proyecto
-    └── arquitectura.md   # Este archivo
+└── docs/                           # Documentación del proyecto
+    ├── statement.md                # Propuesta del proyecto
+    ├── arquitectura.md             # Este archivo
+    ├── algoritmos_de_prueba/                      
+    │   └── algoritmo_de_prueba.rs  
+    │   └── test_lexer.rs           
+    │   └── test_sintactico.rs      
+    ├── lexer/                      
+    │   └── ply_lexer_manual.md     # Guía del analizador léxico
+    ├── parser/                      
+    │   └── REGLAS_SINTACTICAS.md   # Reglas con las estructuras sitacticas correctas para Rust    
+    └── semantic/                              
 ```
 
 ## Descripción de Archivos

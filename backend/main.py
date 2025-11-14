@@ -8,7 +8,7 @@ import sys
 # Agregar el directorio analyzer al path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from analyzer.lexer import Lexer
+from analyzer.ply_lexer import tokenize_source
 # from analyzer.parser import RustParser
 # from analyzer.semantic import SemanticAnalyzer
 
@@ -80,12 +80,12 @@ async def root():
 async def analyze_lexico(input_data: CodeInput):
     """Ejecuta análisis léxico del código Rust"""
     try:
-        lexer = Lexer(input_data.code)
-        tokens = lexer.tokenize()
+        # Usar el nuevo lexer basado en PLY
+        tokens = tokenize_source(input_data.code)
 
         token_list = []
         error_list = []
-        log_content = f"=== ANÁLISIS LÉXICO ===\n"
+        log_content = f"=== ANÁLISIS LÉXICO (PLY) ===\n"
         log_content += f"Desarrollador: {input_data.developer}\n"
         log_content += f"Fecha: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}\n\n"
         log_content += f"CÓDIGO:\n{input_data.code}\n\n"
@@ -93,18 +93,18 @@ async def analyze_lexico(input_data: CodeInput):
 
         for tok in tokens:
             token_list.append(TokenOutput(
-                type=tok.type,
-                value=str(tok.lexeme),
-                line=tok.line
+                type=tok['type'],
+                value=str(tok['value']),
+                line=tok['line']
             ))
-            log_content += f"  {tok.type:20} | {tok.lexeme:30} | Línea {tok.line}\n"
+            log_content += f"  {tok['type']:20} | {tok['value']:30} | Línea {tok['line']}\n"
 
-            # Detectar tokens de error
-            if tok.type == 'ERROR':
+            # El nuevo lexer no genera tokens de ERROR, pero se mantiene la lógica por si se añade en el futuro
+            if tok['type'] == 'ERROR':
                 error_list.append(ErrorOutput(
                     type="Error Léxico",
-                    message=str(tok.literal) if tok.literal else f"Token no reconocido: '{tok.lexeme}'",
-                    line=tok.line
+                    message=str(tok.get('literal', tok['value'])),
+                    line=tok['line']
                 ))
 
         if error_list:
@@ -132,13 +132,12 @@ async def analyze_lexico(input_data: CodeInput):
 async def analyze_sintactico(input_data: CodeInput):
     """Ejecuta análisis sintáctico del código Rust"""
     try:
-        # Primero hacer análisis léxico
-        lexer = RustLexer()
-        tokens = list(lexer.tokenize(input_data.code))
-
-        # TODO: Implementar parser
+        # Usar el nuevo lexer para el análisis sintáctico futuro
+        tokens = tokenize_source(input_data.code)
+        
+        # TODO: Implementar parser que consuma estos tokens
         # parser = RustParser()
-        # ast = parser.parse(input_data.code)
+        # ast = parser.parse(tokens) # El parser debería recibir los tokens
 
         log_content = f"=== ANÁLISIS SINTÁCTICO ===\n"
         log_content += f"Desarrollador: {input_data.developer}\n"
@@ -150,7 +149,7 @@ async def analyze_sintactico(input_data: CodeInput):
 
         return AnalysisResponse(
             status="pending",
-            tokens=[TokenOutput(type=t.type, value=str(t.value), line=t.lineno) for t in tokens],
+            tokens=[TokenOutput(type=t['type'], value=str(t['value']), line=t['line']) for t in tokens],
             errors=[ErrorOutput(type="Info", message="Análisis sintáctico en desarrollo")],
             ast={"message": "En desarrollo"},
             log_file=os.path.basename(log_filename)

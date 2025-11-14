@@ -1,0 +1,12 @@
+=== ANÁLISIS LÉXICO (PLY) ===
+Desarrollador: Alvasconv
+Fecha: 14-11-2025 15:36:46
+
+CÓDIGO:
+#
+
+TOKENS:
+  ERROR                | #                              | Línea 1
+
+ERRORES ENCONTRADOS: 1
+  Línea 1: Illegal character '#'

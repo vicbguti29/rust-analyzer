@@ -1,0 +1,189 @@
+=== ANÁLISIS LÉXICO (PLY) ===
+Desarrollador: Alvasconv
+Fecha: 14-11-2025 15:38:11
+
+CÓDIGO:
+// codigo de prueba de Angello VAsconez (Alvasconv)
+
+// --- Ejemplo de Código Rust Válido ---
+// Este archivo contiene únicamente sintaxis
+// reconocida por el lexer actual.
+
+/*
+  Bloque de comentario multilínea.
+  Aquí se define una estructura y funciones.
+*/
+
+// Uso del operador de ámbito (SCOPE)
+use std::vec;
+
+// Definición de una estructura simple
+struct Coordenada {
+    x: i32,
+    y: i32,
+}
+
+// Definición de una función con flecha (ARROW)
+fn sumar(a: i32, b: i32) -> i32 {
+    return a + b;
+}
+
+fn main() {
+    // Declaración de variables con let, mut y const
+    let inmutable = 100;
+    let mut mutable = 20.5;
+    const PI: f64 = 3.1416;
+
+    // Instanciación de la estructura
+    let origen: Coordenada = Coordenada { x: 0, y: 0 };
+
+    // Operadores aritméticos y de asignación
+    mutable = mutable + 10.0;
+    let producto = inmutable * 2;
+    let division = 100 / 5;
+
+    // Uso de operadores de comparación y lógicos
+    if producto > 150 {
+        // String con secuencias de escape
+        let mensaje = "El producto es mayor\ny usa el ampersand &.";
+    } else {
+        // Bucle simple
+        loop {
+            break;
+        }
+    }
+
+    // Llamada a función
+    let resultado_suma = sumar(5, 3);
+}
+
+TOKENS:
+  USE                  | use                            | Línea 13
+  IDENT                | std                            | Línea 13
+  COLON                | :                              | Línea 13
+  COLON                | :                              | Línea 13
+  IDENT                | vec                            | Línea 13
+  SEMICOLON            | ;                              | Línea 13
+  STRUCT               | struct                         | Línea 16
+  IDENT                | Coordenada                     | Línea 16
+  LBRACE               | {                              | Línea 16
+  IDENT                | x                              | Línea 17
+  COLON                | :                              | Línea 17
+  I32                  | i32                            | Línea 17
+  COMMA                | ,                              | Línea 17
+  IDENT                | y                              | Línea 18
+  COLON                | :                              | Línea 18
+  I32                  | i32                            | Línea 18
+  COMMA                | ,                              | Línea 18
+  RBRACE               | }                              | Línea 19
+  FN                   | fn                             | Línea 22
+  IDENT                | sumar                          | Línea 22
+  LPAREN               | (                              | Línea 22
+  IDENT                | a                              | Línea 22
+  COLON                | :                              | Línea 22
+  I32                  | i32                            | Línea 22
+  COMMA                | ,                              | Línea 22
+  IDENT                | b                              | Línea 22
+  COLON                | :                              | Línea 22
+  I32                  | i32                            | Línea 22
+  RPAREN               | )                              | Línea 22
+  ARROW                | ->                             | Línea 22
+  I32                  | i32                            | Línea 22
+  LBRACE               | {                              | Línea 22
+  RETURN               | return                         | Línea 23
+  IDENT                | a                              | Línea 23
+  PLUS                 | +                              | Línea 23
+  IDENT                | b                              | Línea 23
+  SEMICOLON            | ;                              | Línea 23
+  RBRACE               | }                              | Línea 24
+  FN                   | fn                             | Línea 26
+  IDENT                | main                           | Línea 26
+  LPAREN               | (                              | Línea 26
+  RPAREN               | )                              | Línea 26
+  LBRACE               | {                              | Línea 26
+  LET                  | let                            | Línea 28
+  IDENT                | inmutable                      | Línea 28
+  EQUALS               | =                              | Línea 28
+  NUMBER               | 100                            | Línea 28
+  SEMICOLON            | ;                              | Línea 28
+  LET                  | let                            | Línea 29
+  MUT                  | mut                            | Línea 29
+  IDENT                | mutable                        | Línea 29
+  EQUALS               | =                              | Línea 29
+  FLOAT                | 20.5                           | Línea 29
+  SEMICOLON            | ;                              | Línea 29
+  CONST                | const                          | Línea 30
+  IDENT                | PI                             | Línea 30
+  COLON                | :                              | Línea 30
+  F64                  | f64                            | Línea 30
+  EQUALS               | =                              | Línea 30
+  FLOAT                | 3.1416                         | Línea 30
+  SEMICOLON            | ;                              | Línea 30
+  LET                  | let                            | Línea 33
+  IDENT                | origen                         | Línea 33
+  COLON                | :                              | Línea 33
+  IDENT                | Coordenada                     | Línea 33
+  EQUALS               | =                              | Línea 33
+  IDENT                | Coordenada                     | Línea 33
+  LBRACE               | {                              | Línea 33
+  IDENT                | x                              | Línea 33
+  COLON                | :                              | Línea 33
+  NUMBER               | 0                              | Línea 33
+  COMMA                | ,                              | Línea 33
+  IDENT                | y                              | Línea 33
+  COLON                | :                              | Línea 33
+  NUMBER               | 0                              | Línea 33
+  RBRACE               | }                              | Línea 33
+  SEMICOLON            | ;                              | Línea 33
+  IDENT                | mutable                        | Línea 36
+  EQUALS               | =                              | Línea 36
+  IDENT                | mutable                        | Línea 36
+  PLUS                 | +                              | Línea 36
+  FLOAT                | 10.0                           | Línea 36
+  SEMICOLON            | ;                              | Línea 36
+  LET                  | let                            | Línea 37
+  IDENT                | producto                       | Línea 37
+  EQUALS               | =                              | Línea 37
+  IDENT                | inmutable                      | Línea 37
+  TIMES                | *                              | Línea 37
+  NUMBER               | 2                              | Línea 37
+  SEMICOLON            | ;                              | Línea 37
+  LET                  | let                            | Línea 38
+  IDENT                | division                       | Línea 38
+  EQUALS               | =                              | Línea 38
+  NUMBER               | 100                            | Línea 38
+  DIVIDE               | /                              | Línea 38
+  NUMBER               | 5                              | Línea 38
+  SEMICOLON            | ;                              | Línea 38
+  IF                   | if                             | Línea 41
+  IDENT                | producto                       | Línea 41
+  GT                   | >                              | Línea 41
+  NUMBER               | 150                            | Línea 41
+  LBRACE               | {                              | Línea 41
+  LET                  | let                            | Línea 43
+  IDENT                | mensaje                        | Línea 43
+  EQUALS               | =                              | Línea 43
+  STRING               | "El producto es mayor\ny usa el ampersand &." | Línea 43
+  SEMICOLON            | ;                              | Línea 43
+  RBRACE               | }                              | Línea 44
+  ELSE                 | else                           | Línea 44
+  LBRACE               | {                              | Línea 44
+  LOOP                 | loop                           | Línea 46
+  LBRACE               | {                              | Línea 46
+  BREAK                | break                          | Línea 47
+  SEMICOLON            | ;                              | Línea 47
+  RBRACE               | }                              | Línea 48
+  RBRACE               | }                              | Línea 49
+  LET                  | let                            | Línea 52
+  IDENT                | resultado_suma                 | Línea 52
+  EQUALS               | =                              | Línea 52
+  IDENT                | sumar                          | Línea 52
+  LPAREN               | (                              | Línea 52
+  NUMBER               | 5                              | Línea 52
+  COMMA                | ,                              | Línea 52
+  NUMBER               | 3                              | Línea 52
+  RPAREN               | )                              | Línea 52
+  SEMICOLON            | ;                              | Línea 52
+  RBRACE               | }                              | Línea 53
+
+✓ Análisis léxico completado sin errores
