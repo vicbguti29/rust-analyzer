@@ -9,8 +9,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from analyzer.ply_lexer import tokenize_source
-# from analyzer.parser import RustParser
-# from analyzer.semantic import SemanticAnalyzer
+from analyzer.ply_parser_final import parse_source
 
 app = FastAPI(
     title="Analizador Léxico, Sintáctico y Semántico - Rust",
@@ -136,8 +135,8 @@ async def analyze_sintactico(input_data: CodeInput):
         tokens = tokenize_source(input_data.code)
         
         # TODO: Implementar parser que consuma estos tokens
-        # parser = RustParser()
-        # ast = parser.parse(tokens) # El parser debería recibir los tokens
+        parser = parse_source()
+        ast = parser.parse(tokens) # El parser debería recibir los tokens
 
         log_content = f"=== ANÁLISIS SINTÁCTICO ===\n"
         log_content += f"Desarrollador: {input_data.developer}\n"

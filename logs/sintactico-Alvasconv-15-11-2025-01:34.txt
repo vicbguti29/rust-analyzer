@@ -1,0 +1,37 @@
+=== ANÁLISIS SINTÁCTICO (PLY) ===
+Desarrollador: Alvasconv
+Fecha: 15-11-2025 01:34:58
+
+CÓDIGO:
+let var:i32 = (3,4,5);
+
+✓ Análisis sintáctico completado sin errores
+
+--- ÁRBOL DE SINTAXIS ABSTRACTA (AST) ---
+{
+  "type": "program",
+  "body": [
+    {
+      "type": "let_declaration",
+      "name": "var",
+      "var_type": "i32",
+      "value": {
+        "type": "tuple_literal",
+        "elements": [
+          {
+            "type": "literal",
+            "value": 3
+          },
+          {
+            "type": "literal",
+            "value": 4
+          },
+          {
+            "type": "literal",
+            "value": 5
+          }
+        ]
+      }
+    }
+  ]
+}

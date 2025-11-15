@@ -11,14 +11,21 @@
 # - Mínimo: 1 estructura de datos, 1 estructura de control, 1 función
 
 import ply.yacc as yacc
-from ply_lexer import tokens, lexer
+from .ply_lexer import tokens, lexer
 from datetime import datetime
+import logging # Usaremos logging para la salida de debug
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s"
+)
 
 # Precedencia de operadores
 precedence = (
     ('left', 'OR'),
     ('left', 'AND'),
     ('left', 'EQ', 'NEQ', 'LT', 'LTE', 'GT', 'GTE'),
+    ('left', 'DOTDOT'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
     ('right', 'NOT'),
@@ -49,7 +56,10 @@ def p_item(p):
     """item : function_decl
             | struct_decl
             | const_stmt
-            | static_stmt"""
+            | static_stmt
+            | enum_decl
+            | trait_decl
+            | impl_block""" # Añadir impl_block aquí
     p[0] = p[1]
 
 
@@ -126,6 +136,12 @@ def p_expr_comparison(p):
     p[0] = ('comparison', p[1], p[2], p[3])
 
 
+# Expresión de rango
+def p_expr_range(p):
+    """expr : expr DOTDOT expr"""
+    p[0] = ('range', p[1], p[3])
+
+
 # ============================================================================
 # REGLA 3: CONECTORES LOGICOS
 # RESPONSABILIDAD: vicbguti29
@@ -152,6 +168,7 @@ def p_expr_paren(p):
     p[0] = p[2]
 
 
+
 # Literales
 def p_expr_literal(p):
     """expr : IDENT
@@ -160,7 +177,20 @@ def p_expr_literal(p):
             | STRING
             | TRUE
             | FALSE"""
-    p[0] = ('literal', p[1])
+    # p.slice[1] es el objeto Token completo. Usamos su campo 'literal'
+    # que ya fue procesado por el lexer (ej. convirtió '5' a 5).
+    p[0] = ('literal', p.slice[1].literal)
+
+# Array literal
+def p_expr_array_literal(p):
+    """expr : LBRACKET exprs RBRACKET
+            | LBRACKET RBRACKET"""
+    if len(p) == 4:
+        p[0] = ('array_literal', p[2])
+    else:
+        p[0] = ('array_literal', [])
+
+
 
 
 # ============================================================================
@@ -178,12 +208,46 @@ def p_stmt_if(p):
         p[0] = ('if_else', p[2], p[4], p[8])
 
 
-# TODO: While loop - A CARGO DE COMPAÑERO
-# TODO: For loop - A CARGO DE COMPAÑERO
-# TODO: Loop infinito - A CARGO DE COMPAÑERO
-# TODO: Break statement - A CARGO DE COMPAÑERO
-# TODO: Continue statement - A CARGO DE COMPAÑERO
-# TODO: Return statement - A CARGO DE COMPAÑERO
+
+# While loop
+def p_stmt_while(p):
+    """stmt : WHILE expr LBRACE stmts RBRACE"""
+    p[0] = ('while_loop', p[2], p[4])
+
+
+# For loop
+def p_stmt_for(p):
+    """stmt : FOR IDENT IN expr LBRACE stmts RBRACE"""
+    p[0] = ('for_loop', p[2], p[4], p[6])
+
+
+# Infinite loop
+def p_stmt_loop(p):
+    """stmt : LOOP LBRACE stmts RBRACE"""
+    p[0] = ('infinite_loop', p[3])
+
+
+# Break statement
+def p_stmt_break(p):
+    """stmt : BREAK SEMICOLON"""
+    p[0] = ('break_stmt',)
+
+
+# Continue statement
+def p_stmt_continue(p):
+    """stmt : CONTINUE SEMICOLON"""
+    p[0] = ('continue_stmt',)
+
+
+# Return statement
+def p_stmt_return(p):
+    """stmt : RETURN SEMICOLON
+            | RETURN expr SEMICOLON"""
+    if len(p) == 3:
+        p[0] = ('return_stmt', None)  # return;
+    else:
+        p[0] = ('return_stmt', p[2])  # return <expr>;
+
 
 
 # ============================================================================
@@ -208,7 +272,88 @@ def p_field(p):
     p[0] = ('field', p[1], p[3])
 
 
-# TODO: Otras estructuras de datos (enum, trait, impl) - A CARGO DE COMPAÑERO
+# Enum declaration
+def p_enum_decl(p):
+    """enum_decl : ENUM IDENT LBRACE enum_variants RBRACE
+                 | ENUM IDENT LBRACE RBRACE"""
+    p[0] = ('enum_decl', p[2], p[4] if len(p) == 6 else [])
+
+def p_enum_variants(p):
+    """enum_variants : IDENT
+                     | enum_variants COMMA IDENT"""
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+# Trait declaration
+def p_trait_decl(p):
+    """trait_decl : TRAIT IDENT LBRACE trait_items RBRACE
+                  | TRAIT IDENT LBRACE RBRACE"""
+    p[0] = ('trait_decl', p[2], p[4] if len(p) == 6 else [])
+
+def p_trait_items(p):
+    """trait_items : fn_signature
+                   | trait_items fn_signature"""
+    p[0] = [p[1]] if len(p) == 2 else p[1] + [p[2]]
+
+def p_fn_signature(p):
+    """fn_signature : FN IDENT LPAREN params_list RPAREN SEMICOLON
+                    | FN IDENT LPAREN RPAREN SEMICOLON
+                    | FN IDENT LPAREN params_list RPAREN ARROW TYPE SEMICOLON
+                    | FN IDENT LPAREN RPAREN ARROW TYPE SEMICOLON"""
+    if len(p) == 7: # Con parámetros, sin retorno
+        p[0] = ('fn_signature', p[2], p[4], None)
+    elif len(p) == 6: # Sin parámetros, sin retorno
+        p[0] = ('fn_signature', p[2], [], None)
+    elif len(p) == 10: # Con parámetros, con retorno
+        p[0] = ('fn_signature', p[2], p[4], p[7])
+    else: # Sin parámetros, con retorno
+        p[0] = ('fn_signature', p[2], [], p[6])
+
+# Impl block
+def p_impl_block(p):
+    """impl_block : IMPL IDENT LBRACE impl_items RBRACE
+                  | IMPL IDENT LBRACE RBRACE"""
+    p[0] = ('impl_block', p[2], p[4] if len(p) == 6 else [])
+
+def p_impl_items(p):
+
+    """impl_items : function_decl
+
+                  | impl_items function_decl"""
+
+    p[0] = [p[1]] if len(p) == 2 else p[1] + [p[2]]
+
+
+
+# Struct initialization (as an expression)
+
+def p_expr_struct_init(p):
+
+    """expr : IDENT LBRACE RBRACE"""
+
+    p[0] = ('struct_init', p[1], [])
+
+# Tuple literal
+def p_expr_tuple_literal(p):
+    """expr : LPAREN RPAREN
+            | LPAREN exprs COMMA RPAREN
+            | LPAREN exprs RPAREN"""
+    if len(p) == 3: # Empty tuple () or single parenthesized expression (expr)
+        if p[2] == ')': # Empty tuple
+            p[0] = ('tuple_literal', [])
+        else: # This case should ideally be handled by p_expr_paren, but adding for completeness
+            p[0] = p[2] # Parenthesized expression
+    elif len(p) == 5: # Single element tuple (expr,) or multi-element tuple (expr, expr, ...)
+        p[0] = ('tuple_literal', p[2])
+    else: # Multi-element tuple (expr, expr, ...)
+        p[0] = ('tuple_literal', p[2])
+
+
+
+
+# TODO: Otras estructuras de datos (impl) - A CARGO DE COMPAÑERO
 
 
 # ============================================================================
@@ -217,13 +362,36 @@ def p_field(p):
 # ============================================================================
 
 # Función simple sin parámetros y sin retorno
-def p_function_decl_empty_params(p):
-    """function_decl : FN IDENT LPAREN RPAREN LBRACE stmts RBRACE"""
-    p[0] = ('fn', p[2], [], None, p[6])
+def p_function_decl(p):
+    """function_decl : FN IDENT LPAREN params_list RPAREN LBRACE stmts RBRACE
+                     | FN IDENT LPAREN RPAREN LBRACE stmts RBRACE
+                     | FN IDENT LPAREN params_list RPAREN ARROW TYPE LBRACE stmts RBRACE
+                     | FN IDENT LPAREN RPAREN ARROW TYPE LBRACE stmts RBRACE"""
+    if len(p) == 9: # Con parámetros, sin retorno
+        p[0] = ('fn', p[2], p[4], None, p[7])
+    elif len(p) == 8: # Sin parámetros, sin retorno
+        p[0] = ('fn', p[2], [], None, p[6])
+    elif len(p) == 11: # Con parámetros, con retorno
+        p[0] = ('fn', p[2], p[4], p[7], p[9])
+    else: # Sin parámetros, con retorno
+        p[0] = ('fn', p[2], [], p[6], p[8])
 
+def p_params_list(p):
+    """params_list : param
+                   | params_list COMMA param"""
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
-# TODO: Funciones con parámetros - A CARGO DE COMPAÑERO
-# TODO: Funciones con tipo de retorno - A CARGO DE COMPAÑERO
+def p_param(p):
+    """param : IDENT COLON TYPE
+             | AMPERSAND SELF""" # Añadir &self
+    if len(p) == 4:
+        p[0] = ('param', p[1], p[3])
+    else:
+        p[0] = ('param', p[1] + p[2], None) # &self, tipo None por ahora
+
 # TODO: Funciones con múltiples parámetros - A CARGO DE COMPAÑERO
 
 
@@ -233,8 +401,8 @@ def p_function_decl_empty_params(p):
 # ============================================================================
 
 def p_stmt_println(p):
-    """stmt : PRINTLN LPAREN STRING RPAREN SEMICOLON
-            | PRINTLN LPAREN STRING COMMA exprs RPAREN SEMICOLON"""
+    """stmt : CONSOLE_PRINT LPAREN STRING RPAREN SEMICOLON
+            | CONSOLE_PRINT LPAREN STRING COMMA exprs RPAREN SEMICOLON"""
     if len(p) == 6:
         p[0] = ('println', p[3], [])
     else:
@@ -352,7 +520,7 @@ def log_syntax_errors(filename, errors, source_code):
         f.write("REPORTE DE ANALISIS SINTACTICO\n")
         f.write("=" * 80 + "\n")
         f.write("Fecha y Hora: {}\n".format(datetime.now().strftime('%d-%m-%Y %H:%M:%S')))
-        f.write("Desarrollador: vicbguti29\n")
+        f.write("Desarrollador: Alvasconv\n")
         f.write("=" * 80 + "\n\n")
         
         f.write("CODIGO FUENTE ANALIZADO:\n")

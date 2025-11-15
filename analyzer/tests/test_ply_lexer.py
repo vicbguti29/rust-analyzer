@@ -199,3 +199,15 @@ def test_unrecognized_character():
         {'type': 'SEMICOLON', 'value': ';', 'line': 1, 'literal': ';'},
     ]
     assert_token_sequence(tokens, expected)
+
+
+def test_dotdot_operator():
+    """Tests that the range operator '..' is tokenized correctly."""
+    code = "0..10"
+    tokens = tokenize_source(code)
+    expected = [
+        {'type': 'NUMBER', 'value': '0', 'line': 1, 'literal': 0},
+        {'type': 'DOTDOT', 'value': '..', 'line': 1, 'literal': '..'},
+        {'type': 'NUMBER', 'value': '10', 'line': 1, 'literal': 10},
+    ]
+    assert_token_sequence(tokens, expected)
