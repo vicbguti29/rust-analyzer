@@ -71,43 +71,59 @@ def p_item(p):
 # Variable let (mutable o no)
 def p_let_stmt(p):
     """let_stmt : LET IDENT EQUALS expr SEMICOLON
-                | LET IDENT COLON TYPE EQUALS expr SEMICOLON
+                | LET IDENT COLON type EQUALS expr SEMICOLON
                 | LET MUT IDENT EQUALS expr SEMICOLON
-                | LET MUT IDENT COLON TYPE EQUALS expr SEMICOLON"""
-    if len(p) == 6:
-        p[0] = ('let', p[2], None, p[4])
-    elif len(p) == 8 and p[3] == ':':
-        p[0] = ('let', p[2], p[4], p[6])
-    elif len(p) == 8:
-        p[0] = ('let_mut', p[3], None, p[5])
+                | LET MUT IDENT COLON type EQUALS expr SEMICOLON"""
+    # Check for 'mut'
+    is_mut = (p[2] == 'mut')
+
+    if not is_mut:
+        # Productions without 'mut'
+        if len(p) == 6:  # LET IDENT = expr ;
+            p[0] = ('let', p[2], None, p[4])
+        else:  # LET IDENT : type = expr ; (len 8)
+            p[0] = ('let', p[2], p[4], p[6])
     else:
-        p[0] = ('let_mut', p[3], p[5], p[7])
+        # Productions with 'mut'
+        if len(p) == 7:  # LET MUT IDENT = expr ;
+            p[0] = ('let_mut', p[3], None, p[5])
+        else:  # LET MUT IDENT : type = expr ; (len 9)
+            p[0] = ('let_mut', p[3], p[5], p[7])
 
 
 # Constante
 def p_const_stmt(p):
-    """const_stmt : CONST IDENT COLON TYPE EQUALS expr SEMICOLON"""
+    """const_stmt : CONST IDENT COLON type EQUALS expr SEMICOLON"""
     p[0] = ('const', p[2], p[4], p[6])
 
 
 # Variable estática
 def p_static_stmt(p):
-    """static_stmt : STATIC IDENT COLON TYPE EQUALS expr SEMICOLON"""
+    """static_stmt : STATIC IDENT COLON type EQUALS expr SEMICOLON"""
     p[0] = ('static', p[2], p[4], p[6])
 
 
 # Tipos de datos
 def p_type(p):
-    """TYPE : I32
-            | I64
-            | U32
-            | U64
-            | F32
-            | F64
-            | BOOL
-            | CHAR
-            | STR
-            | STRING_TYPE"""
+    """type : AMPERSAND base_type
+            | base_type"""
+    if len(p) == 3:
+        p[0] = '&' + p[2]
+    else:
+        p[0] = p[1]
+
+def p_base_type(p):
+    """base_type : I32
+                 | I64
+                 | U32
+                 | U64
+                 | F32
+                 | F64
+                 | BOOL
+                 | CHAR
+                 | STR
+                 | STRING_TYPE
+                 | SELF_TYPE"""
     p[0] = p[1]
 
 
@@ -208,6 +224,14 @@ def p_stmt_if(p):
         p[0] = ('if_else', p[2], p[4], p[8])
 
 
+def p_stmt_println(p):
+    """stmt : CONSOLE_PRINT LPAREN STRING RPAREN SEMICOLON
+            | CONSOLE_PRINT LPAREN STRING COMMA exprs RPAREN SEMICOLON"""
+    if len(p) == 6:
+        p[0] = ('println', p[3], [])
+    else:
+        p[0] = ('println', p[3], p[5])
+
 
 # While loop
 def p_stmt_while(p):
@@ -256,31 +280,42 @@ def p_stmt_return(p):
 # ============================================================================
 
 def p_struct_decl(p):
-    """struct_decl : STRUCT IDENT LBRACE fields RBRACE
-                   | STRUCT IDENT LBRACE RBRACE"""
-    p[0] = ('struct', p[2], p[4] if len(p) == 6 else [])
+    """struct_decl : STRUCT IDENT LBRACE opt_fields RBRACE"""
+    p[0] = ('struct', p[2], p[4])
 
+def p_opt_fields(p):
+    """opt_fields : non_empty_fields
+                  | non_empty_fields COMMA
+                  | empty"""
+    p[0] = p[1] if p[1] else []
 
-def p_fields(p):
-    """fields : field
-              | fields COMMA field"""
-    p[0] = [p[1]] if len(p) == 2 else p[1] + [p[3]]
-
+def p_non_empty_fields(p):
+    """non_empty_fields : field
+                       | non_empty_fields COMMA field"""
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
 
 def p_field(p):
-    """field : IDENT COLON TYPE"""
+    """field : IDENT COLON type"""
     p[0] = ('field', p[1], p[3])
 
 
 # Enum declaration
 def p_enum_decl(p):
-    """enum_decl : ENUM IDENT LBRACE enum_variants RBRACE
-                 | ENUM IDENT LBRACE RBRACE"""
-    p[0] = ('enum_decl', p[2], p[4] if len(p) == 6 else [])
+    """enum_decl : ENUM IDENT LBRACE opt_enum_variants RBRACE"""
+    p[0] = ('enum_decl', p[2], p[4])
 
-def p_enum_variants(p):
-    """enum_variants : IDENT
-                     | enum_variants COMMA IDENT"""
+def p_opt_enum_variants(p):
+    """opt_enum_variants : non_empty_enum_variants
+                         | non_empty_enum_variants COMMA
+                         | empty"""
+    p[0] = p[1] if p[1] else []
+
+def p_non_empty_enum_variants(p):
+    """non_empty_enum_variants : IDENT
+                               | non_empty_enum_variants COMMA IDENT"""
     if len(p) == 2:
         p[0] = [p[1]]
     else:
@@ -300,8 +335,8 @@ def p_trait_items(p):
 def p_fn_signature(p):
     """fn_signature : FN IDENT LPAREN params_list RPAREN SEMICOLON
                     | FN IDENT LPAREN RPAREN SEMICOLON
-                    | FN IDENT LPAREN params_list RPAREN ARROW TYPE SEMICOLON
-                    | FN IDENT LPAREN RPAREN ARROW TYPE SEMICOLON"""
+                    | FN IDENT LPAREN params_list RPAREN ARROW type SEMICOLON
+                    | FN IDENT LPAREN RPAREN ARROW type SEMICOLON"""
     if len(p) == 7: # Con parámetros, sin retorno
         p[0] = ('fn_signature', p[2], p[4], None)
     elif len(p) == 6: # Sin parámetros, sin retorno
@@ -313,27 +348,34 @@ def p_fn_signature(p):
 
 # Impl block
 def p_impl_block(p):
-    """impl_block : IMPL IDENT LBRACE impl_items RBRACE
-                  | IMPL IDENT LBRACE RBRACE"""
-    p[0] = ('impl_block', p[2], p[4] if len(p) == 6 else [])
+    """impl_block : IMPL IDENT FOR IDENT LBRACE impl_items_opt RBRACE
+                  | IMPL IDENT LBRACE impl_items_opt RBRACE"""
+    if len(p) == 8:  # impl Trait for Struct
+        p[0] = ('impl_block', p[2], p[4], p[6]) # (impl_block, Trait, Struct, items)
+    else:  # impl Struct
+        p[0] = ('impl_block', p[2], None, p[4]) # (impl_block, Struct, None, items)
+
+def p_impl_items_opt(p):
+    """impl_items_opt : impl_items
+                      | empty"""
+    p[0] = p[1] if p[1] else []
 
 def p_impl_items(p):
-
     """impl_items : function_decl
-
                   | impl_items function_decl"""
-
     p[0] = [p[1]] if len(p) == 2 else p[1] + [p[2]]
 
 
 
 # Struct initialization (as an expression)
-
 def p_expr_struct_init(p):
-
     """expr : IDENT LBRACE RBRACE"""
-
     p[0] = ('struct_init', p[1], [])
+
+# Input expression
+def p_expr_input(p):
+    """expr : INPUT LPAREN RPAREN"""
+    p[0] = ('input_expr',)
 
 # Tuple literal
 def p_expr_tuple_literal(p):
@@ -365,8 +407,8 @@ def p_expr_tuple_literal(p):
 def p_function_decl(p):
     """function_decl : FN IDENT LPAREN params_list RPAREN LBRACE stmts RBRACE
                      | FN IDENT LPAREN RPAREN LBRACE stmts RBRACE
-                     | FN IDENT LPAREN params_list RPAREN ARROW TYPE LBRACE stmts RBRACE
-                     | FN IDENT LPAREN RPAREN ARROW TYPE LBRACE stmts RBRACE"""
+                     | FN IDENT LPAREN params_list RPAREN ARROW type LBRACE stmts RBRACE
+                     | FN IDENT LPAREN RPAREN ARROW type LBRACE stmts RBRACE"""
     if len(p) == 9: # Con parámetros, sin retorno
         p[0] = ('fn', p[2], p[4], None, p[7])
     elif len(p) == 8: # Sin parámetros, sin retorno
@@ -385,7 +427,7 @@ def p_params_list(p):
         p[0] = p[1] + [p[3]]
 
 def p_param(p):
-    """param : IDENT COLON TYPE
+    """param : IDENT COLON type
              | AMPERSAND SELF""" # Añadir &self
     if len(p) == 4:
         p[0] = ('param', p[1], p[3])
@@ -396,32 +438,7 @@ def p_param(p):
 
 
 # ============================================================================
-# REGLA 7: IMPRESION - println!
-# RESPONSABILIDAD: vicbguti29
-# ============================================================================
-
-def p_stmt_println(p):
-    """stmt : CONSOLE_PRINT LPAREN STRING RPAREN SEMICOLON
-            | CONSOLE_PRINT LPAREN STRING COMMA exprs RPAREN SEMICOLON"""
-    if len(p) == 6:
-        p[0] = ('println', p[3], [])
-    else:
-        p[0] = ('println', p[3], p[5])
-
-
-# ============================================================================
 # REGLA 8: ENTRADA - input
-# RESPONSABILIDAD: vicbguti29
-# ============================================================================
-
-def p_stmt_input(p):
-    """stmt : LET IDENT EQUALS INPUT LPAREN RPAREN SEMICOLON
-            | LET MUT IDENT EQUALS INPUT LPAREN RPAREN SEMICOLON"""
-    p[0] = ('input', p[2] if len(p) == 8 else p[3])
-
-
-# ============================================================================
-# REGLA 9: REASIGNACION
 # RESPONSABILIDAD: vicbguti29
 # ============================================================================
 

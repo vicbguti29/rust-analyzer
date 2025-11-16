@@ -5,11 +5,21 @@
 import sys
 import os
 from datetime import datetime
-from ply_parser_final import parse_source, log_syntax_errors
+
+# Añadir la raíz del proyecto al sys.path para permitir importaciones absolutas
+# El script está en analyzer/tests, así que subimos dos niveles
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
+
+from analyzer.ply_parser_final import parse_source, log_syntax_errors
 
 def main():
-    # Leer el archivo test_sintactico.rs
-    test_file = 'test_sintactico.rs'
+    # Usar la ruta relativa desde la raíz del proyecto
+    # OPCIONES PARA PRUEBAS:
+    # 'docs/algoritmos_de_prueba/test_sintactico.rs'
+    # 'docs/algoritmos_de_prueba/prb_sintactico_valido.rs'
+    # 'docs/algoritmos_de_prueba/prb_sintactico_errores.rs'
+    test_file = 'docs/algoritmos_de_prueba/prb_sintactico_valido.rs'
     
     if not os.path.exists(test_file):
         print(f"Error: No se encontró el archivo {test_file}")
@@ -47,14 +57,18 @@ def main():
             print(f"   Token encontrado: {error['token']}")
             print(f"   Tipo de token: {error['type']}")
     
-    # Crear archivo de log
+    # Crear archivo de log en el directorio 'logs'
+    log_dir = 'logs'
+    os.makedirs(log_dir, exist_ok=True)
+    
     timestamp = datetime.now().strftime("%d%m%Y-%H%M")
-    log_filename = f"sintactico-vicbguti29-{timestamp}.txt"
+    log_filename = f"sintactico-Alvasconv-{timestamp}.txt"
+    log_filepath = os.path.join(log_dir, log_filename)
     
     print(f"\n" + "-" * 80)
-    print(f"Generando archivo de log: {log_filename}")
+    print(f"Generando archivo de log: {log_filepath}")
     
-    log_syntax_errors(log_filename, errors, source_code)
+    log_syntax_errors(log_filepath, errors, source_code)
     
     print(f"Archivo de log creado exitosamente")
     print("=" * 80)

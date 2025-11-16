@@ -24,11 +24,34 @@ rust-analyzer/
 ### Algortimos de prueba
 
 **ubicación:** rust-analyzer/docs/algoritmos_de_prueba
+
 ```
 algoritmos_de_prueba/
-├── algoritmo_de_prueba.rs   # Algoritmo de prueba de Angello Vasconez
-├── test_lexer.rs            # Algortimo de prueba de Victor Borbor
-├── test_sintactico.rs       # Algortimo de prueba para el analizador sintáctico
+├── algoritmo_de_prueba.rs     # Algoritmo de prueba de Angello Vasconez
+├── test_lexer.rs              # Algortimo de prueba de Victor Borbor
+├── test_sintactico.rs         # Algortimo de prueba para el analizador sintáctico
+├── prb_sintactico_valido.rs   # Algortimo de prueba para el analizador que genera correctamente el AST
+├── prb_sintactico_errores.rs  # Algortimo de prueba para el analizador que presenta errores
+```
+
+### Ejecución de pruebas del parser
+
+1. Primerp asigna la ruta del archivo que quiere correr en el archivo **'tests/run_parser_tests.py'** tal como se muestra a continuación:
+ 
+```bash
+def main():
+    # Usar la ruta relativa desde la raíz del proyecto
+    # OPCIONES PARA PRUEBAS:
+    # 'docs/algoritmos_de_prueba/test_sintactico.rs'
+    # 'docs/algoritmos_de_prueba/prb_sintactico_valido.rs'
+    # 'docs/algoritmos_de_prueba/prb_sintactico_errores.rs'
+    test_file = 'docs/algoritmos_de_prueba/prb_sintactico_valido.rs'
+```
+2. Despues desde el terminal debe ubicarse en la ruta **'rust-analyzer/analyzer/tests'**
+3. Asegurese de tener los requerimientos del proyecto (requerimientos.txt) indicados en el backend o un entono virtual con los requerimientos
+4. finalmente corra el archivo **'run_parser_test.py'** con el comando: 
+```bash
+python run_parser_test.py
 ```
 
 ## 🛠️ Tecnologías

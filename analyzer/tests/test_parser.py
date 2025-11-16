@@ -280,6 +280,31 @@ def test_function_with_return_type():
 
     assert ast == expected_ast, "El AST para la función con tipo de retorno no es el esperado."
 
+
+def test_function_with_multiple_parameters():
+    """
+    Prueba una declaración de función con múltiples parámetros.
+    """
+    code = "fn add(x: i32, y: i32) {}"
+
+    ast, errors = parse_source(code)
+
+    assert not errors, f"Se encontraron errores de sintaxis: {errors}"
+
+    expected_ast = (
+        'program',
+        [
+            ('fn', 'add',
+                [
+                    ('param', 'x', 'i32'),
+                    ('param', 'y', 'i32')
+                ],
+                None, [])
+        ]
+    )
+    assert ast == expected_ast, "El AST para la función con múltiples parámetros no es el esperado."
+
+
 def test_simple_enum_declaration():
     """
     Prueba una declaración 'enum' simple con variantes.
@@ -320,33 +345,9 @@ def test_simple_trait_declaration():
 
     assert ast == expected_ast, "El AST para la declaración trait no es el esperado."
 
-def test_simple_impl_block():
+def test_empty_impl_block():
     """
-    Prueba un bloque 'impl' simple para una estructura.
-    Fallará hasta que se implemente la regla para 'impl'.
-    """
-    code = """
-        struct MyStruct {}
-        impl MyStruct {}
-        """
-    ast, errors = parse_source(code)
-
-    assert not errors, f"Se encontraron errores de sintaxis: {errors}"
-
-    # Estructura esperada: ('impl_block', tipo_implementado, [items_del_impl])
-    expected_ast = (
-        'program',
-        [
-            ('struct', 'MyStruct', []),
-            ('impl_block', 'MyStruct', [])
-        ]
-    )
-    assert ast == expected_ast, "El AST para el bloque impl no es el esperado."
-
-def test_simple_impl_block():
-    """
-    Prueba un bloque 'impl' simple para una estructura.
-    Fallará hasta que se implemente la regla para 'impl'.
+    Prueba un bloque 'impl' simple y vacío para una estructura.
     """
     code = """
         struct MyStruct {}
@@ -356,15 +357,97 @@ def test_simple_impl_block():
 
     assert not errors, f"Se encontraron errores de sintaxis: {errors}"
 
-    # Estructura esperada: ('impl_block', tipo_implementado, [items_del_impl])
     expected_ast = (
         'program',
         [
             ('struct', 'MyStruct', []),
-            ('impl_block', 'MyStruct', [])
+            ('impl_block', 'MyStruct', None, [])
         ]
     )
-    assert ast == expected_ast, "El AST para el bloque impl no es el esperado."
+    assert ast == expected_ast, "El AST para el bloque impl vacío no es el esperado."
+
+
+def test_impl_with_function_and_explicit_return():
+    """
+    Prueba un bloque 'impl' con una función que devuelve una instancia
+    de struct mediante un retorno explícito.
+    """
+    code = """
+struct MyStruct {}
+impl MyStruct {
+    fn new() -> MyStruct {
+                    return MyStruct {};    }
+}
+"""
+    ast, errors = parse_source(code)
+
+    assert not errors, f"Se encontraron errores de sintaxis: {errors}"
+
+    expected_ast = (
+        'program',
+        [
+            ('struct', 'MyStruct', []),
+            ('impl_block', 'MyStruct', None, [
+                ('fn', 'new', [], 'MyStruct', [
+                    ('return_stmt', ('struct_init', 'MyStruct', []))
+                ])
+            ])
+        ]
+    )
+    assert ast == expected_ast, "El AST para el impl con retorno explícito no es el esperado."
+
+
+def test_impl_trait_for_struct():
+    """
+    Prueba la implementación de un trait para un struct.
+    """
+    code = """
+trait MyTrait {}
+struct MyStruct {}
+impl MyTrait for MyStruct {}
+"""
+    ast, errors = parse_source(code)
+    assert not errors, f"Se encontraron errores de sintaxis: {errors}"
+
+    expected_ast = (
+        'program',
+        [
+            ('trait_decl', 'MyTrait', []),
+            ('struct', 'MyStruct', []),
+            ('impl_block', 'MyTrait', 'MyStruct', [])
+        ]
+    )
+    assert ast == expected_ast, "El AST para impl Trait for Struct no es el esperado."
+
+
+def test_associated_function_with_self_type():
+    """
+    Prueba una función asociada que devuelve el tipo 'Self'.
+    """
+    code = """
+struct MyStruct {}
+impl MyStruct {
+    fn new() -> Self {
+        return MyStruct {};
+    }
+}
+"""
+    ast, errors = parse_source(code)
+    assert not errors, f"Se encontraron errores de sintaxis: {errors}"
+
+    expected_ast = (
+        'program',
+        [
+            ('struct', 'MyStruct', []),
+            ('impl_block', 'MyStruct', None, [
+                ('fn', 'new', [], 'Self', [
+                    ('return_stmt', ('struct_init', 'MyStruct', []))
+                ])
+            ])
+        ]
+    )
+    assert ast == expected_ast, "El AST para la función asociada con Self no es el esperado."
+
 
 def test_array_literal():
     """
@@ -471,3 +554,95 @@ def test_single_element_tuple_literal():
         ]
     )
     assert ast == expected_ast, "El AST para el tuple de un solo elemento no es el esperado."
+
+
+@pytest.mark.xfail(reason="Documenta un bug complejo y conocido donde println! falla dentro de un if/else en un archivo grande.")
+def test_full_valid_file_with_known_bug():
+    """
+    Prueba el archivo completo 'prb_sintactico_valido.rs' que se sabe que falla.
+    Este test documenta el bug del parser con la combinación de sentencias.
+    """
+    code = """
+// --- 1. Declaraciones de Nivel Superior ---
+const MAX_CONNECTIONS: u32 = 100;
+static APP_NAME: &str = "Rust Analyzer";
+
+struct Point { x: i32, y: i32, }
+struct Empty {}
+
+enum Status { Connected, Disconnected, Connecting, }
+enum EmptyEnum {}
+
+trait Serializable {
+    fn to_string(&self) -> String;
+    fn get_id() -> u32;
+}
+
+impl Serializable for Point {
+    fn to_string(&self) -> String {
+        return "Point";
+    }
+    fn get_id() -> u32 {
+        return 1;
+    }
+}
+
+impl Empty {
+    fn new() -> Self {
+        let instance = Empty {};
+        return instance;
+    }
+}
+
+// --- 2. Funciones ---
+fn simple_function() {}
+fn function_with_params(count: i32, name: String) { let x = count; }
+fn function_with_return() -> bool { return true; }
+
+// --- 3. Función Principal con Sentencias y Expresiones ---
+fn main() {
+    let a: i32 = 10;
+    let b = 20.5;
+    let mut c = false;
+    let mut d: String = "hello";
+
+    let result = (a + 5) * 2 - 1;
+    let is_ok = result > 20 && !c;
+    let is_not_ok = a < 0 || c == true;
+
+    if is_ok {
+        println!("OK");
+    } else {
+        println!("Not OK");
+    }
+
+    let mut counter = 0;
+    while counter < 3 {
+        println!("while...");
+        counter = counter + 1;
+    }
+
+    for i in 0..2 {
+        println!("for...");
+    }
+
+    loop {
+        println!("loop...");
+        break;
+    }
+    
+    let e = Empty {};
+    let arr = [1, 2, 3];
+    let tup = (10, "tuple", false);
+    
+    counter = 10;
+    counter += 5;
+
+    let data = input();
+    
+    return;
+}
+"""
+    ast, errors = parse_source(code)
+    assert not errors, f"Este test falla debido a un bug conocido y complejo del parser."
+
