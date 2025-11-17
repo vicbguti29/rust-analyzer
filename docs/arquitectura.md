@@ -26,14 +26,13 @@ rust-analyzer/
     ├── statement.md                # Propuesta del proyecto
     ├── arquitectura.md             # Este archivo
     ├── algoritmos_de_prueba/                      
-    │   └── algoritmo_de_prueba.rs  
-    │   └── test_lexer.rs           
-    │   └── test_sintactico.rs      
     ├── lexer/                      
     │   └── ply_lexer_manual.md     # Guía del analizador léxico
     ├── parser/                      
-    │   └── REGLAS_SINTACTICAS.md   # Reglas con las estructuras sitacticas correctas para Rust    
+    │   └── REGLAS_SINTACTICAS.md   # Reglas con las estructuras sitacticas correctas para Rust 
+    │   └── ply_parser_manual.md     # Guía del analizador sintáctico   
     └── semantic/                              
+        └── semantic_analyzer_manual.md   # Guía del analizador semántico    
 ```
 
 ## Descripción de Archivos

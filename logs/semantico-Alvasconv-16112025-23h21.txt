@@ -1,0 +1,61 @@
+================================================================================
+REPORTE DE ANÁLISIS SEMÁNTICO
+================================================================================
+Fecha y Hora: 16-11-2025 23:21:41
+Desarrollador: Alvasconv
+================================================================================
+
+CÓDIGO FUENTE ANALIZADO:
+--------------------------------------------------------------------------------
+// docs/algoritmos_de_prueba/prb_semantico.rs
+// Archivo de prueba para el Analizador Semántico.
+// Contiene casos válidos e inválidos para las reglas de tipado.
+
+fn main() {
+    // --- Casos Válidos ---
+
+    // Declaración explícita correcta
+    let a: i32 = 10;
+    let b: f64 = 20.5;
+    let c: bool = true;
+    let d: &str = "hello";
+
+    // Declaración implícita (el tipo se infiere)
+    let e = 50;
+    let f = false;
+
+    // Reasignación correcta a una variable mutable
+    let mut g = 100;
+    g = 200;
+
+    let mut h = "texto";
+    h = "otro texto";
+
+
+    // --- Casos Inválidos (el analizador semántico debería detectarlos) ---
+
+    // Regla 1: Discrepancia de tipos en la declaración explícita
+    let error1: i32 = "esto no es un i32";
+    let error2: bool = 1;
+
+
+    // Regla 2: Discrepancia de tipos en la reasignación
+    let mut error3 = 500;
+    error3 = true; // Error: se esperaba i32, se encontró bool
+
+    let mut error4 = "hola";
+    error4 = 123; // Error: se esperaba &str, se encontró i32
+}
+
+--------------------------------------------------------------------------------
+
+ERRORES SEMÁNTICOS ENCONTRADOS: 4
+--------------------------------------------------------------------------------
+
+1. Error Semántico (Línea 29): Discrepancia de tipos. Se esperaba tipo 'i32' pero se encontró tipo '&str' en la asignación de 'error1'.
+
+2. Error Semántico (Línea 30): Discrepancia de tipos. Se esperaba tipo 'bool' pero se encontró tipo 'i32' en la asignación de 'error2'.
+
+3. Error Semántico (Línea 35): Discrepancia de tipos en la reasignación. La variable 'error3' tiene el tipo 'i32', pero se intentó asignar un valor de tipo 'bool'.
+
+4. Error Semántico (Línea 38): Discrepancia de tipos en la reasignación. La variable 'error4' tiene el tipo '&str', pero se intentó asignar un valor de tipo 'i32'.

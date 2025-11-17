@@ -18,8 +18,8 @@ rust-analyzer/
 ├── frontend/         # Interfaz web (HTML/CSS/JS)
 ├── backend/          # API REST con FastAPI
 ├── analyzer/         # Módulos de análisis PLY
-├── logs/            # Logs generados por análisis
-└── docs/            # Documentación del proyecto
+├── logs/             # Logs generados por análisis
+└── docs/             # Documentación del proyecto
 ```
 ### Algortimos de prueba
 
@@ -30,15 +30,16 @@ algoritmos_de_prueba/
 ├── algoritmo_de_prueba.rs     # Algoritmo de prueba de Angello Vasconez
 ├── test_lexer.rs              # Algortimo de prueba de Victor Borbor
 ├── test_sintactico.rs         # Algortimo de prueba para el analizador sintáctico
-├── prb_sintactico_valido.rs   # Algortimo de prueba para el analizador que genera correctamente el AST
-├── prb_sintactico_errores.rs  # Algortimo de prueba para el analizador que presenta errores
+├── prb_sintactico_valido.rs   # Algortimo de prueba para el sintactico, genera correctamente el AST
+├── prb_sintactico_errores.rs  # Algortimo de prueba para el sintactico, presenta errores
+└── prb_semantico.rs           # Algortimo de prueba para el analizador semantico, presenta casos válidos e inválidos
 ```
 
-### Ejecución de pruebas del parser
+### Ejecución de pruebas del Analizador Sintáctico
 
-1. Primerp asigna la ruta del archivo que quiere correr en el archivo **'tests/run_parser_tests.py'** tal como se muestra a continuación:
+1. Primero asigna la ruta del archivo que quiere correr en el archivo **'tests/run_parser_test.py'** tal como se muestra a continuación:
  
-```bash
+```python
 def main():
     # Usar la ruta relativa desde la raíz del proyecto
     # OPCIONES PARA PRUEBAS:
@@ -50,9 +51,29 @@ def main():
 2. Despues desde el terminal debe ubicarse en la ruta **'rust-analyzer/analyzer/tests'**
 3. Asegurese de tener los requerimientos del proyecto (requerimientos.txt) indicados en el backend o un entono virtual con los requerimientos
 4. finalmente corra el archivo **'run_parser_test.py'** con el comando: 
+
 ```bash
 python run_parser_test.py
 ```
+
+### Ejecución de pruebas del Analizador Semántico
+
+1. Primerp asigna la ruta del archivo que quiere correr en el archivo **'tests/run_semantic_test.py'** tal como se muestra a continuación:
+ 
+```python
+def main():
+    # Apuntar al nuevo archivo de pruebas semánticas
+    # OPCIONES PARA PRUEBAS:
+    # ''docs/algoritmos_de_prueba/prb_semantico.rs''
+    test_file = 'docs/algoritmos_de_prueba/prb_semantico.rs'
+```
+2. Despues desde el terminal debe ubicarse en la ruta **'rust-analyzer/analyzer/tests'**
+3. Asegurese de tener los requerimientos del proyecto (requerimientos.txt) indicados en el backend o un entono virtual con los requerimientos
+4. finalmente corra el archivo **'run_semantic_test.py'** con el comando: 
+```bash
+python run_semantic_test.py
+```
+
 
 ## 🛠️ Tecnologías
 
@@ -66,6 +87,8 @@ python run_parser_test.py
 - [Propuesta del Proyecto](docs/statement.md)
 - [Arquitectura Técnica](docs/arquitectura.md)
 - [Manual del analizador léxico](docs/lexer/ply_lexer_manual.md)
+- [Manual del analizador Sintáctico](docs/lexer/ply_parser_manual.md)
+- [Manual del analizador Semántico](docs/lexer/semantic_analyzer_manual.md)
 
 ## 🚦 Inicio Rápido
 

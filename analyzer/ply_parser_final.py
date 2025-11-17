@@ -76,19 +76,20 @@ def p_let_stmt(p):
                 | LET MUT IDENT COLON type EQUALS expr SEMICOLON"""
     # Check for 'mut'
     is_mut = (p[2] == 'mut')
+    line_no = p.lineno(1)
 
     if not is_mut:
         # Productions without 'mut'
         if len(p) == 6:  # LET IDENT = expr ;
-            p[0] = ('let', p[2], None, p[4])
+            p[0] = ('let', p[2], None, p[4], line_no)
         else:  # LET IDENT : type = expr ; (len 8)
-            p[0] = ('let', p[2], p[4], p[6])
+            p[0] = ('let', p[2], p[4], p[6], line_no)
     else:
         # Productions with 'mut'
         if len(p) == 7:  # LET MUT IDENT = expr ;
-            p[0] = ('let_mut', p[3], None, p[5])
+            p[0] = ('let_mut', p[3], None, p[5], line_no)
         else:  # LET MUT IDENT : type = expr ; (len 9)
-            p[0] = ('let_mut', p[3], p[5], p[7])
+            p[0] = ('let_mut', p[3], p[5], p[7], line_no)
 
 
 # Constante
@@ -123,7 +124,8 @@ def p_base_type(p):
                  | CHAR
                  | STR
                  | STRING_TYPE
-                 | SELF_TYPE"""
+                 | SELF_TYPE
+                 | IDENT"""
     p[0] = p[1]
 
 
@@ -193,9 +195,9 @@ def p_expr_literal(p):
             | STRING
             | TRUE
             | FALSE"""
-    # p.slice[1] es el objeto Token completo. Usamos su campo 'literal'
-    # que ya fue procesado por el lexer (ej. convirtió '5' a 5).
-    p[0] = ('literal', p.slice[1].literal)
+    # Guardamos el tipo de token junto con el valor literal para
+    # poder distinguir entre un IDENT (nombre de variable) y un STRING.
+    p[0] = ('literal', p.slice[1].literal, p.slice[1].type)
 
 # Array literal
 def p_expr_array_literal(p):
@@ -448,7 +450,7 @@ def p_stmt_assign(p):
             | IDENT MINUS_EQUALS expr SEMICOLON
             | IDENT TIMES_EQUALS expr SEMICOLON
             | IDENT DIVIDE_EQUALS expr SEMICOLON"""
-    p[0] = ('assign', p[1], p[2], p[3])
+    p[0] = ('assign', p[1], p[2], p[3], p.lineno(1))
 
 
 # ============================================================================

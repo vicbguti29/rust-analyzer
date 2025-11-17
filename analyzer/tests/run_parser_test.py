@@ -61,7 +61,7 @@ def main():
     log_dir = 'logs'
     os.makedirs(log_dir, exist_ok=True)
     
-    timestamp = datetime.now().strftime("%d%m%Y-%H%M")
+    timestamp = datetime.now().strftime("%d%m%Y-%Hh%M")
     log_filename = f"sintactico-Alvasconv-{timestamp}.txt"
     log_filepath = os.path.join(log_dir, log_filename)
     

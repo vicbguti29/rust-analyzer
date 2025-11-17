@@ -107,15 +107,19 @@ fn main() {
     let is_ok = result > 20 && !c;
     let is_not_ok = a < 0 || c == true;
     
-    // Sentencia de expresión
-    // 5; 
-
     // Estructuras de control
-    /* if is_ok {
+     if is_ok {
         println!("OK");
     } else {
         println!("Not OK");
-    } */
+    }
+
+    if is_ok {
+        let mut var_new = 0;
+        var new = 10;
+    } else {
+        var new = 15;
+    }
 
     let mut counter = 0;
     while counter < 3 {
