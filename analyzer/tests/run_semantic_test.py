@@ -15,7 +15,7 @@ from analyzer.semantic_analyzer import semantic, log_semantic_errors
 
 def main():
     # Apuntar al nuevo archivo de pruebas semánticas
-    test_file = 'docs/algoritmos_de_prueba/prb_semantico.rs'
+    test_file = 'docs/algoritmos_de_prueba/prb_existencia_scope.rs'
     
     if not os.path.exists(test_file):
         print(f"Error: No se encontró el archivo {test_file}")
@@ -65,13 +65,13 @@ def main():
     log_dir = 'logs'
     os.makedirs(log_dir, exist_ok=True)
     timestamp = datetime.now().strftime("%d%m%Y-%Hh%M")
-    log_filename = f"semantico-Alvasconv-{timestamp}.txt"
+    log_filename = f"semantico-vicbguti29-{timestamp}.txt"
     log_filepath = os.path.join(log_dir, log_filename)
     
     print("\n" + "=" * 80)
     print(f"Generando archivo de log: {log_filepath}")
     
-    log_semantic_errors(log_filepath, semantic_errors, source_code)
+    log_semantic_errors(log_filepath, semantic_errors, source_code, developer="vicbguti29")
     
     print(f"Archivo de log creado exitosamente.")
     print("=" * 80)
