@@ -87,8 +87,8 @@ python run_semantic_test.py
 - [Propuesta del Proyecto](docs/statement.md)
 - [Arquitectura Técnica](docs/arquitectura.md)
 - [Manual del analizador léxico](docs/lexer/ply_lexer_manual.md)
-- [Manual del analizador Sintáctico](docs/lexer/ply_parser_manual.md)
-- [Manual del analizador Semántico](docs/lexer/semantic_analyzer_manual.md)
+- [Manual del analizador Sintáctico](docs/parser/ply_parser_manual.md)
+- [Manual del analizador Semántico](docs/semantic/semantic_analyzer_manual.md)
 
 ## 🚦 Inicio Rápido
 
