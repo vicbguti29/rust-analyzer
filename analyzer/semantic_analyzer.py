@@ -74,6 +74,8 @@ class SemanticAnalyzer:
     def __init__(self):
         self.symbol_table = SymbolTable()
         self.errors = []
+        self.in_loop = False  # Rastrear si estamos dentro de un loop
+        self.in_function = False  # Rastrear si estamos dentro de una función
 
     def visit(self, node):
         if node is None: return
@@ -82,13 +84,22 @@ class SemanticAnalyzer:
         return method(node)
 
     def generic_visit(self, node):
+        """Visita todos los sub-nodos de forma recursiva."""
         for element in node[1:]:
             if isinstance(element, tuple):
-                self.visit(element)
+                self.visit(element)  # Esto llamará al visit_* correcto
             elif isinstance(element, list):
                 for item in element:
                     if isinstance(item, tuple):
                         self.visit(item)
+
+    def enter_scope(self):
+        """Entra a un nuevo alcance (bloque de código)."""
+        self.symbol_table.enter_scope()
+
+    def exit_scope(self):
+        """Sale del alcance actual."""
+        self.symbol_table.exit_scope()
 
     # --- LÓGICA DE EVALUACIÓN DE TIPOS Y VALIDACIÓN DE IDENTIFICADORES ---
     def get_expression_type(self, expr_node, line_no=None):
@@ -149,11 +160,21 @@ class SemanticAnalyzer:
         for stmt in statements:
             self.visit(stmt)
 
-    # Placeholder para futuro manejo de scope de función
+    # Manejo de scope de función y verificación de return
     def visit_fn(self, node):
         _fn, _name, _params, _ret_type, body = node
+        
+        # Entrar en contexto de función
+        old_in_function = self.in_function
+        self.in_function = True
+        
+        self.enter_scope()
         for stmt in body:
             self.visit(stmt)
+        self.exit_scope()
+        
+        # Salir del contexto de función
+        self.in_function = old_in_function
 
     # ============================================================================
     # REGLA 3: DISCREPANCIA DE TIPOS EN DECLARACIÓN EXPLÍCITA
@@ -162,6 +183,9 @@ class SemanticAnalyzer:
     def visit_let(self, node):
         # AST: ('let', var_name, declared_type, expr_node, line_no)
         _let, var_name, declared_type, expr_node, line_no = node
+        
+        # Visitar la expresión para análisis de operaciones
+        self.visit(expr_node)
         
         evaluated_type = self.get_expression_type(expr_node)
 
@@ -176,6 +200,9 @@ class SemanticAnalyzer:
     def visit_let_mut(self, node):
         # AST: ('let_mut', var_name, declared_type, expr_node, line_no)
         _let, var_name, declared_type, expr_node, line_no = node
+        
+        # Visitar la expresión para análisis de operaciones
+        self.visit(expr_node)
         
         evaluated_type = self.get_expression_type(expr_node)
 
@@ -203,6 +230,9 @@ class SemanticAnalyzer:
     def visit_assign(self, node):
         # AST: ('assign', var_name, operator, expr_node, line_no)
         _assign, var_name, _op, expr_node, line_no = node
+        
+        # Visitar la expresión para análisis de operaciones
+        self.visit(expr_node)
 
         symbol, symbol_scope_idx = self.symbol_table.lookup(var_name)
         
@@ -234,6 +264,183 @@ class SemanticAnalyzer:
         
         if new_type != 'unknown' and symbol['type'] != new_type:
             error_msg = f"Error Semántico (Línea {line_no}): Discrepancia de tipos en la reasignación. La variable '{var_name}' tiene el tipo '{symbol['type']}', pero se intentó asignar un valor de tipo '{new_type}'."
+            self.errors.append(error_msg)
+
+    # ============================================================================
+    # REGLA 6: COMPATIBILIDAD DE TIPOS EN OPERACIONES ARITMÉTICAS
+    # RESPONSABILIDAD: vicbguti29
+    # ============================================================================
+    def visit_binop(self, node):
+        # AST: ('binop', left_expr, operator, right_expr)
+        _binop, left_expr, operator, right_expr = node
+        
+        left_type = self.get_expression_type(left_expr)
+        right_type = self.get_expression_type(right_expr)
+        
+        # Ambos deben ser numéricos
+        numeric_types = {'i32', 'i64', 'u32', 'u64', 'f32', 'f64'}
+        
+        if left_type not in numeric_types and left_type != 'unknown':
+            error_msg = f"Error Semántico: Operador aritmético '{operator}' no puede aplicarse a tipo '{left_type}'. Se esperaba un tipo numérico."
+            self.errors.append(error_msg)
+            return
+        
+        if right_type not in numeric_types and right_type != 'unknown':
+            error_msg = f"Error Semántico: Operador aritmético '{operator}' no puede aplicarse a tipo '{right_type}'. Se esperaba un tipo numérico."
+            self.errors.append(error_msg)
+            return
+        
+        # Los tipos deben coincidir
+        if left_type != 'unknown' and right_type != 'unknown' and left_type != right_type:
+            error_msg = f"Error Semántico: Operador aritmético '{operator}' no puede aplicarse a tipos '{left_type}' y '{right_type}'. No existe una implementación para esta operación."
+            self.errors.append(error_msg)
+
+    # ============================================================================
+    # REGLA 7: RESTRICCIÓN DE TIPO EN OPERADORES LÓGICOS
+    # RESPONSABILIDAD: vicbguti29
+    # ============================================================================
+    def visit_and(self, node):
+        # AST: ('and', left_expr, right_expr)
+        _and, left_expr, right_expr = node
+        
+        left_type = self.get_expression_type(left_expr)
+        right_type = self.get_expression_type(right_expr)
+        
+        if left_type != 'bool' and left_type != 'unknown':
+            error_msg = f"Error Semántico: Operador lógico '&&' no puede aplicarse al tipo '{left_type}'. Se esperaba 'bool'."
+            self.errors.append(error_msg)
+        
+        if right_type != 'bool' and right_type != 'unknown':
+            error_msg = f"Error Semántico: Operador lógico '&&' no puede aplicarse al tipo '{right_type}'. Se esperaba 'bool'."
+            self.errors.append(error_msg)
+
+    def visit_or(self, node):
+        # AST: ('or', left_expr, right_expr)
+        _or, left_expr, right_expr = node
+        
+        left_type = self.get_expression_type(left_expr)
+        right_type = self.get_expression_type(right_expr)
+        
+        if left_type != 'bool' and left_type != 'unknown':
+            error_msg = f"Error Semántico: Operador lógico '||' no puede aplicarse al tipo '{left_type}'. Se esperaba 'bool'."
+            self.errors.append(error_msg)
+        
+        if right_type != 'bool' and right_type != 'unknown':
+            error_msg = f"Error Semántico: Operador lógico '||' no puede aplicarse al tipo '{right_type}'. Se esperaba 'bool'."
+            self.errors.append(error_msg)
+
+    def visit_not(self, node):
+        # AST: ('not', expr)
+        _not, expr = node
+        
+        expr_type = self.get_expression_type(expr)
+        
+        if expr_type != 'bool' and expr_type != 'unknown':
+            error_msg = f"Error Semántico: Operador lógico '!' no puede aplicarse al tipo '{expr_type}'. Se esperaba 'bool'."
+            self.errors.append(error_msg)
+
+    # ============================================================================
+    # VERIFICACIÓN DE FLUJO DE CONTROL
+    # RESPONSABILIDAD: vicbguti29
+    # Verifica que break y return se usen en contextos válidos
+    # ============================================================================
+    def visit_while_loop(self, node):
+        # AST: ('while_loop', condition, body)
+        _while, _condition, body = node
+        
+        old_in_loop = self.in_loop
+        self.in_loop = True
+        
+        for stmt in body:
+            self.visit(stmt)
+        
+        self.in_loop = old_in_loop
+
+    def visit_for_loop(self, node):
+        # AST: ('for_loop', var, range_expr, body)
+        _for, _var, _range_expr, body = node
+        
+        old_in_loop = self.in_loop
+        self.in_loop = True
+        
+        for stmt in body:
+            self.visit(stmt)
+        
+        self.in_loop = old_in_loop
+
+    def visit_infinite_loop(self, node):
+        # AST: ('infinite_loop', body)
+        _loop, body = node
+        
+        old_in_loop = self.in_loop
+        self.in_loop = True
+        
+        for stmt in body:
+            self.visit(stmt)
+        
+        self.in_loop = old_in_loop
+
+    def visit_break_stmt(self, node):
+        # AST: ('break_stmt',)
+        if not self.in_loop:
+            error_msg = "Error Semántico: 'break' solo puede usarse dentro de un bucle (while, for, loop)."
+            self.errors.append(error_msg)
+
+    def visit_continue_stmt(self, node):
+        # AST: ('continue_stmt',)
+        if not self.in_loop:
+            error_msg = "Error Semántico: 'continue' solo puede usarse dentro de un bucle (while, for, loop)."
+            self.errors.append(error_msg)
+
+    def visit_return_stmt(self, node):
+        # AST: ('return_stmt', expr_or_none)
+        if not self.in_function:
+            error_msg = "Error Semántico: 'return' solo puede usarse dentro de una función."
+            self.errors.append(error_msg)
+
+    def visit_if(self, node):
+        # AST: ('if', condition, body)
+        _if, _condition, body = node
+        
+        self.enter_scope()
+        for stmt in body:
+            self.visit(stmt)
+        self.exit_scope()
+
+    def visit_if_else(self, node):
+        # AST: ('if_else', condition, if_body, else_body)
+        _if_else, _condition, if_body, else_body = node
+        
+        self.enter_scope()
+        for stmt in if_body:
+            self.visit(stmt)
+        self.exit_scope()
+        
+        self.enter_scope()
+        for stmt in else_body:
+            self.visit(stmt)
+        self.exit_scope()
+
+    def visit_comparison(self, node):
+        # AST: ('comparison', left_expr, operator, right_expr)
+        # Procesar normalmente, comparaciones pueden ser de cualquier tipo que soporte el operador
+        _comparison, left_expr, _operator, right_expr = node
+        self.visit(left_expr)
+        self.visit(right_expr)
+
+    def visit_range(self, node):
+        # AST: ('range', start, end)
+        # Verificar que inicio y fin sean numéricos
+        _range, start, end = node
+        start_type = self.get_expression_type(start)
+        end_type = self.get_expression_type(end)
+        
+        numeric_types = {'i32', 'i64', 'u32', 'u64', 'f32', 'f64'}
+        if start_type not in numeric_types and start_type != 'unknown':
+            error_msg = f"Error Semántico: Rango debe tener inicio numérico, se encontró '{start_type}'."
+            self.errors.append(error_msg)
+        if end_type not in numeric_types and end_type != 'unknown':
+            error_msg = f"Error Semántico: Rango debe tener fin numérico, se encontró '{end_type}'."
             self.errors.append(error_msg)
 
 
