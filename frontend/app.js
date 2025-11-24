@@ -1,5 +1,7 @@
 // API Base URL - cambiar según el entorno
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8000' 
+    : 'https://rust-analyzer-api.onrender.com'; 
 
 // Modo demo con datos mock
 const DEMO_MODE = false; // Cambiar a false cuando el backend esté disponible
