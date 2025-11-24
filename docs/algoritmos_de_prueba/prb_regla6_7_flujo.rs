@@ -1,0 +1,73 @@
+// docs/algoritmos_de_prueba/prb_regla6_7_flujo.rs
+// Archivo de prueba para REGLA 6, 7 y Verificación de Flujo de Control
+// Autor: vicbguti29
+
+fn main() {
+    // === REGLA 6: COMPATIBILIDAD DE TIPOS EN OPERACIONES ARITMÉTICAS ===
+    
+    // Casos válidos
+    let a: i32 = 5;
+    let b: i32 = 10;
+    let resultado_suma = a + b;  // OK: i32 + i32
+    
+    let x: f64 = 3.14;
+    let y: f64 = 2.71;
+    let resultado_mul = x * y;   // OK: f64 * f64
+    
+    // Casos inválidos (el parser acepta pero semántico rechaza)
+    let c: i32 = 20;
+    let d: f64 = 5.5;
+    let error_arit = c + d;      // ERROR: i32 + f64 no es compatible
+    
+    
+    // === REGLA 7: RESTRICCIÓN DE TIPO EN OPERADORES LÓGICOS ===
+    
+    // Casos válidos
+    let bool1: bool = true;
+    let bool2: bool = false;
+    let resultado_and = bool1 && bool2;  // OK: bool && bool
+    let resultado_or = bool1 || bool2;   // OK: bool || bool
+    let resultado_not = !bool1;          // OK: !bool
+    
+    // Casos inválidos (el parser acepta pero semántico rechaza)
+    let num: i32 = 5;
+    let error_and = num && bool1;        // ERROR: i32 && bool no es válido
+    let error_or = bool1 || num;         // ERROR: bool || i32 no es válido
+    let error_not = !num;                // ERROR: !i32 no es válido
+    
+    
+    // === VERIFICACIÓN DE FLUJO DE CONTROL ===
+    
+    // Casos válidos - break en loop
+    loop {
+        let x = 0;
+        if x > 5 {
+            break;  // OK: break dentro de loop
+        }
+    }
+    
+    // Casos válidos - continue en while
+    let mut counter = 0;
+    while counter < 10 {
+        counter = counter + 1;
+        if counter == 5 {
+            continue;  // OK: continue dentro de while
+        }
+    }
+    
+    // Casos válidos - for loop con break
+    for i in 0..5 {
+        if i == 3 {
+            break;  // OK: break dentro de for
+        }
+    }
+}
+
+// Función para probar return
+fn test_return() -> i32 {
+    let x = 5;
+    if x > 0 {
+        return x;  // OK: return dentro de función
+    }
+    return 0;
+}

@@ -14,8 +14,8 @@ from analyzer.ply_parser_final import parse_source
 from analyzer.semantic_analyzer import semantic, log_semantic_errors
 
 def main():
-    # Apuntar al nuevo archivo de pruebas semánticas
-    test_file = 'docs/algoritmos_de_prueba/prb_existencia_scope.rs'
+    # Apuntar al archivo de pruebas de REGLA 6, 7 y flujo de control
+    test_file = 'docs/algoritmos_de_prueba/prb_regla6_7_flujo.rs'
     
     if not os.path.exists(test_file):
         print(f"Error: No se encontró el archivo {test_file}")
@@ -37,6 +37,17 @@ def main():
         # Imprimir errores sintácticos...
         for i, error in enumerate(syntax_errors, 1):
             print(f"\n{i}. Error en línea {error['line']}: {error['message']}")
+        
+        # Generar log de error sintáctico
+        log_dir = 'logs'
+        os.makedirs(log_dir, exist_ok=True)
+        timestamp = datetime.now().strftime("%d%m%Y-%Hh%M")
+        log_filename = f"semantico-vicbguti29-{timestamp}.txt"
+        log_filepath = os.path.join(log_dir, log_filename)
+        
+        from analyzer.ply_parser_final import log_syntax_errors
+        log_syntax_errors(log_filepath, syntax_errors, source_code)
+        print(f"\nArchivo de log generado: {log_filepath}")
         return 1
     
     if not ast:
