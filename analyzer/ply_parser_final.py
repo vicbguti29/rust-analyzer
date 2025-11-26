@@ -11,9 +11,14 @@
 # - Mínimo: 1 estructura de datos, 1 estructura de control, 1 función
 
 import ply.yacc as yacc
-from .ply_lexer import tokens, lexer
 from datetime import datetime
 import logging # Usaremos logging para la salida de debug
+
+# Importación flexible para tokens y lexer
+try:
+    from .ply_lexer import tokens, lexer
+except ImportError:
+    from ply_lexer import tokens, lexer
 
 logging.basicConfig(
     level=logging.INFO,
@@ -440,7 +445,85 @@ def p_param(p):
 
 
 # ============================================================================
-# REGLA 8: ENTRADA - input
+# REGLA 7: SOLICITAR DATOS POR TECLADO
+# RESPONSABILIDAD: vicbguti29
+# ============================================================================
+# <Ruta> ::= <Identificador> { "::" <Identificador> }
+# <LlamadaFuncion> ::= <Ruta> "(" [ <ListaArgumentos> ] ")"
+# <LlamadaMetodo> ::= <Expresion> "." <Identificador> "(" [ <ListaArgumentos> ] ")" ";"
+# Ejemplo:
+# let mut buffer = String::new();
+# io::stdin().read_line(&mut buffer);
+
+def p_expr_function_call(p):
+    """expr : IDENT LPAREN RPAREN
+            | IDENT LPAREN exprs RPAREN
+            | STRING_TYPE LPAREN RPAREN
+            | STRING_TYPE LPAREN exprs RPAREN"""
+    func_name = p[1]
+    if len(p) == 4:
+        p[0] = ('function_call', func_name, [])
+    else:
+        p[0] = ('function_call', func_name, p[3])
+
+def p_expr_method_call(p):
+    """expr : expr DOT IDENT LPAREN RPAREN
+            | expr DOT IDENT LPAREN exprs RPAREN
+            | expr DOT IDENT"""
+    if len(p) == 6:  # expr DOT IDENT LPAREN RPAREN
+        p[0] = ('method_call', p[1], p[3], [])
+    elif len(p) == 7:  # expr DOT IDENT LPAREN exprs RPAREN
+        p[0] = ('method_call', p[1], p[3], p[5])
+    else:  # expr DOT IDENT (acceso a propiedad/campo)
+        p[0] = ('property_access', p[1], p[3])
+
+def p_expr_path_call(p):
+    """expr : path LPAREN RPAREN
+            | path LPAREN exprs RPAREN
+            | path_segment COLONCOLON IDENT LPAREN RPAREN
+            | path_segment COLONCOLON IDENT LPAREN exprs RPAREN"""
+    if len(p) == 4:  # path LPAREN RPAREN
+        p[0] = ('path_call', p[1], [])
+    elif len(p) == 5 and isinstance(p[2], str) and p[2] == '(':  # path LPAREN exprs RPAREN
+        p[0] = ('path_call', p[1], p[3])
+    elif len(p) == 6:  # path_segment :: IDENT LPAREN RPAREN
+        p[0] = ('path_call', p[1] + "::" + p[3], [])
+    else:  # path_segment :: IDENT LPAREN exprs RPAREN
+        p[0] = ('path_call', p[1] + "::" + p[3], p[5])
+
+def p_expr_path(p):
+    """path : path_segment COLONCOLON path_segment
+            | path COLONCOLON path_segment"""
+    if len(p) == 4:
+        if isinstance(p[1], str):
+            p[0] = p[1] + "::" + p[3]
+        else:
+            p[0] = p[1] + "::" + p[3]
+    else:
+        p[0] = p[1] + "::" + p[3]
+
+def p_path_segment(p):
+    """path_segment : IDENT
+                    | STRING_TYPE
+                    | SELF_TYPE"""
+    p[0] = p[1]
+
+def p_expr_reference(p):
+    """expr : AMPERSAND MUT IDENT
+            | AMPERSAND IDENT"""
+    if len(p) == 4:
+        p[0] = ('reference', '&mut', p[3])
+    else:
+        p[0] = ('reference', '&', p[2])
+
+def p_stmt_input(p):
+    """stmt : IDENT EQUALS expr DOT IDENT LPAREN exprs RPAREN SEMICOLON"""
+    # Ej: buffer = io::stdin().read_line(&mut buffer);
+    p[0] = ('input_stmt', p[1], p[3], p[5], p[7])
+
+
+# ============================================================================
+# REGLA 8: ASIGNACIÓN DE VARIABLES
 # RESPONSABILIDAD: vicbguti29
 # ============================================================================
 
