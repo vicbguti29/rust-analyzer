@@ -6,6 +6,11 @@
 struct Vec2 {}
 struct Color {}
 
+// Pruebas para const y static
+const MAX_POINTS: i32 = 100;
+static LIVES: i32 = 3;
+static mut COUNTER: i32 = 0;
+
 fn main() {
     // --- Casos Válidos ---
 
@@ -68,4 +73,30 @@ fn main() {
     // Regla de Mutabilidad: Reasignación a variable inmutable
     let immutable_var = 1000;
     immutable_var = 2000; // Error: 'immutable_var' no es mutable.
+
+    // --- Pruebas para const y static ---
+    MAX_POINTS = 105; // Error: no se puede reasignar a una constante.
+    LIVES = 4; // Error: no se puede reasignar a una variable static inmutable.
+    COUNTER = 1; // Válido: COUNTER es static mut.
+
+    // --- Pruebas para nuevos tokens ---
+    let modulo_result = 10 % 3; // Válido
+    
+    print!("Esto es un print sin salto de línea.");
+    eprint!("Esto es un eprint.");
+    eprintln!("Esto es un eprintln con salto de línea.");
+
+    // --- Pruebas para variables no inicializadas ---
+    // Caso válido
+    let mut valid_uninit: i32;
+    valid_uninit = 50;
+    let some_var = valid_uninit + 10; // Válido, se usa después de inicializar
+
+    // Caso inválido
+    let invalid_uninit: i32;
+    let another_var = invalid_uninit + 5; // Error: 'invalid_uninit' no ha sido inicializada
+
+    // --- Pruebas para la sintaxis de array [valor; tamaño] ---
+    let array_repeat = [0; 5]; // Válido
+    let array_repeat_error = [0; false]; // Error: el tamaño debe ser un entero
 }

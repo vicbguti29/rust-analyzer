@@ -27,7 +27,7 @@ precedence = (
     ('left', 'EQ', 'NEQ', 'LT', 'LTE', 'GT', 'GTE'),
     ('left', 'DOTDOT'),
     ('left', 'PLUS', 'MINUS'),
-    ('left', 'TIMES', 'DIVIDE'),
+    ('left', 'TIMES', 'DIVIDE', 'MODULO'),
     ('right', 'NOT'),
 )
 
@@ -70,38 +70,54 @@ def p_item(p):
 
 # Variable let (mutable o no)
 def p_let_stmt(p):
-    """let_stmt : LET IDENT EQUALS expr SEMICOLON
-                | LET IDENT COLON type EQUALS expr SEMICOLON
-                | LET MUT IDENT EQUALS expr SEMICOLON
-                | LET MUT IDENT COLON type EQUALS expr SEMICOLON"""
-    # Check for 'mut'
-    is_mut = (p[2] == 'mut')
+    """let_stmt : LET IDENT EQUALS initializer SEMICOLON
+                | LET IDENT COLON type EQUALS initializer SEMICOLON
+                | LET MUT IDENT EQUALS initializer SEMICOLON
+                | LET MUT IDENT COLON type EQUALS initializer SEMICOLON
+                | LET IDENT COLON type SEMICOLON
+                | LET MUT IDENT COLON type SEMICOLON"""
     line_no = p.lineno(1)
-
-    if not is_mut:
-        # Productions without 'mut'
-        if len(p) == 6:  # LET IDENT = expr ;
-            p[0] = ('let', p[2], None, p[4], line_no)
-        else:  # LET IDENT : type = expr ; (len 8)
-            p[0] = ('let', p[2], p[4], p[6], line_no)
+    
+    # Case: let mut ...
+    if p[2] == 'mut':
+        var_name = p[3]
+        # Case: let mut name : type = value ; (len 9)
+        if len(p) == 9:
+            p[0] = ('let_mut', var_name, p[5], p[7], line_no)
+        # Case: let mut name = value ; (len 7)
+        elif p[4] == '=':
+            p[0] = ('let_mut', var_name, None, p[5], line_no)
+        # Case: let mut name : type ; (len 7)
+        else: # p[4] must be ':'
+            p[0] = ('let_mut', var_name, p[5], None, line_no)
+    # Case: let ...
     else:
-        # Productions with 'mut'
-        if len(p) == 7:  # LET MUT IDENT = expr ;
-            p[0] = ('let_mut', p[3], None, p[5], line_no)
-        else:  # LET MUT IDENT : type = expr ; (len 9)
-            p[0] = ('let_mut', p[3], p[5], p[7], line_no)
+        var_name = p[2]
+        # Case: let name : type = value ; (len 8)
+        if len(p) == 8:
+            p[0] = ('let', var_name, p[4], p[6], line_no)
+        # Case: let name = value ; (len 6)
+        elif p[3] == '=':
+            p[0] = ('let', var_name, None, p[4], line_no)
+        # Case: let name : type ; (len 6)
+        else: # p[3] must be ':'
+            p[0] = ('let', var_name, p[4], None, line_no)
 
 
 # Constante
 def p_const_stmt(p):
-    """const_stmt : CONST IDENT COLON type EQUALS expr SEMICOLON"""
+    """const_stmt : CONST IDENT COLON type EQUALS initializer SEMICOLON"""
     p[0] = ('const', p[2], p[4], p[6])
 
 
 # Variable estática
 def p_static_stmt(p):
-    """static_stmt : STATIC IDENT COLON type EQUALS expr SEMICOLON"""
-    p[0] = ('static', p[2], p[4], p[6])
+    """static_stmt : STATIC IDENT COLON type EQUALS initializer SEMICOLON
+                   | STATIC MUT IDENT COLON type EQUALS initializer SEMICOLON"""
+    if len(p) == 8:  # Without mut
+        p[0] = ('static', p[2], p[4], p[6])
+    else:  # With mut
+        p[0] = ('static_mut', p[3], p[5], p[7])
 
 
 # Tipos de datos
@@ -139,7 +155,8 @@ def p_expr_arithmetic(p):
     """expr : expr PLUS expr
             | expr MINUS expr
             | expr TIMES expr
-            | expr DIVIDE expr"""
+            | expr DIVIDE expr
+            | expr MODULO expr"""
     p[0] = ('binop', p[1], p[2], p[3])
 
 
@@ -208,6 +225,10 @@ def p_expr_array_literal(p):
     else:
         p[0] = ('array_literal', [])
 
+def p_expr_array_repeat_syntax(p):
+    """expr : LBRACKET expr SEMICOLON expr RBRACKET"""
+    p[0] = ('array_repeat', p[2], p[4])
+
 
 
 
@@ -218,8 +239,8 @@ def p_expr_array_literal(p):
 
 # If-else simple (RESPONSABILIDAD DE vicbguti29)
 def p_stmt_if(p):
-    """stmt : IF expr LBRACE stmts RBRACE
-            | IF expr LBRACE stmts RBRACE ELSE LBRACE stmts RBRACE"""
+    """stmt : IF expr LBRACE opt_stmts RBRACE
+            | IF expr LBRACE opt_stmts RBRACE ELSE LBRACE opt_stmts RBRACE"""
     if len(p) == 6:
         p[0] = ('if', p[2], p[4])
     else:
@@ -237,19 +258,19 @@ def p_stmt_println(p):
 
 # While loop
 def p_stmt_while(p):
-    """stmt : WHILE expr LBRACE stmts RBRACE"""
+    """stmt : WHILE expr LBRACE opt_stmts RBRACE"""
     p[0] = ('while_loop', p[2], p[4])
 
 
 # For loop
 def p_stmt_for(p):
-    """stmt : FOR IDENT IN expr LBRACE stmts RBRACE"""
+    """stmt : FOR IDENT IN expr LBRACE opt_stmts RBRACE"""
     p[0] = ('for_loop', p[2], p[4], p[6])
 
 
 # Infinite loop
 def p_stmt_loop(p):
-    """stmt : LOOP LBRACE stmts RBRACE"""
+    """stmt : LOOP LBRACE opt_stmts RBRACE"""
     p[0] = ('infinite_loop', p[3])
 
 
@@ -268,7 +289,7 @@ def p_stmt_continue(p):
 # Return statement
 def p_stmt_return(p):
     """stmt : RETURN SEMICOLON
-            | RETURN expr SEMICOLON"""
+            | RETURN initializer SEMICOLON"""
     if len(p) == 3:
         p[0] = ('return_stmt', None)  # return;
     else:
@@ -369,10 +390,15 @@ def p_impl_items(p):
 
 
 
-# Struct initialization (as an expression)
-def p_expr_struct_init(p):
-    """expr : IDENT LBRACE RBRACE"""
+# Struct initialization (as a specific initializer, not a general expression)
+def p_struct_init(p):
+    """struct_init : IDENT LBRACE RBRACE"""
     p[0] = ('struct_init', p[1], [])
+
+def p_initializer(p):
+    """initializer : expr
+                   | struct_init"""
+    p[0] = p[1]
 
 # Input expression
 def p_expr_input(p):
@@ -407,10 +433,10 @@ def p_expr_tuple_literal(p):
 
 # Función simple sin parámetros y sin retorno
 def p_function_decl(p):
-    """function_decl : FN IDENT LPAREN params_list RPAREN LBRACE stmts RBRACE
-                     | FN IDENT LPAREN RPAREN LBRACE stmts RBRACE
-                     | FN IDENT LPAREN params_list RPAREN ARROW type LBRACE stmts RBRACE
-                     | FN IDENT LPAREN RPAREN ARROW type LBRACE stmts RBRACE"""
+    """function_decl : FN IDENT LPAREN params_list RPAREN LBRACE opt_stmts RBRACE
+                     | FN IDENT LPAREN RPAREN LBRACE opt_stmts RBRACE
+                     | FN IDENT LPAREN params_list RPAREN ARROW type LBRACE opt_stmts RBRACE
+                     | FN IDENT LPAREN RPAREN ARROW type LBRACE opt_stmts RBRACE"""
     if len(p) == 9: # Con parámetros, sin retorno
         p[0] = ('fn', p[2], p[4], None, p[7])
     elif len(p) == 8: # Sin parámetros, sin retorno
@@ -445,7 +471,7 @@ def p_param(p):
 # ============================================================================
 
 def p_stmt_assign(p):
-    """stmt : IDENT EQUALS expr SEMICOLON
+    """stmt : IDENT EQUALS initializer SEMICOLON
             | IDENT PLUS_EQUALS expr SEMICOLON
             | IDENT MINUS_EQUALS expr SEMICOLON
             | IDENT TIMES_EQUALS expr SEMICOLON
@@ -457,13 +483,15 @@ def p_stmt_assign(p):
 # AYUDANTES
 # ============================================================================
 
+def p_opt_stmts(p):
+    """opt_stmts : stmts
+                 | empty"""
+    p[0] = p[1] if p[1] else []
+
 def p_stmts(p):
     """stmts : stmt
-             | stmts stmt
-             | empty"""
-    if p[1] is None:
-        p[0] = []
-    elif len(p) == 2:
+             | stmts stmt"""
+    if len(p) == 2:
         p[0] = [p[1]]
     else:
         p[0] = p[1] + [p[2]]
@@ -518,6 +546,9 @@ def parse_source(source):
     """Analiza código fuente Rust"""
     global syntax_errors
     syntax_errors = []
+
+    # Reiniciar el estado del lexer para cada análisis para asegurar un estado limpio
+    lexer.lineno = 1
     
     try:
         result = parser.parse(source, lexer=lexer, debug=False)

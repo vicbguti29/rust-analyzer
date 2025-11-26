@@ -19,7 +19,7 @@ def main():
     # 'docs/algoritmos_de_prueba/test_sintactico.rs'
     # 'docs/algoritmos_de_prueba/prb_sintactico_valido.rs'
     # 'docs/algoritmos_de_prueba/prb_sintactico_errores.rs'
-    test_file = 'docs/algoritmos_de_prueba/prb_sintactico_valido.rs'
+    test_file = 'docs/algoritmos_de_prueba/algoritmo_de_prueba.rs'
     
     if not os.path.exists(test_file):
         print(f"Error: No se encontró el archivo {test_file}")

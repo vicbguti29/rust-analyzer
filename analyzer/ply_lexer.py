@@ -70,6 +70,7 @@ tokens = (
     "MINUS",  # -
     "TIMES",  # *
     "DIVIDE",  # /
+    "MODULO", # %
     "EQUALS",  # =
     "ARROW",  # ->
     "DOTDOT",  # ..
@@ -103,6 +104,7 @@ tokens = (
     "AMPERSAND", # &
     # Comentarios
     "COMMENT",  # // comentarios
+    "DOC_COMMENT", # /// comentarios
 )
 # Palabras reservadas de Rust
 reserved = {
@@ -135,7 +137,7 @@ def t_AND(t): r'&&'; t.literal = t.value; return t
 def t_OR(t): r'\|\|'; t.literal = t.value; return t
 
 # Operadores y delimitadores simples
-t_PLUS = r"\+"; t_MINUS = r"-"; t_TIMES = r"\*"; t_DIVIDE = r"/"; t_EQUALS = r"="
+t_PLUS = r"\+"; t_MINUS = r"-"; t_TIMES = r"\*"; t_DIVIDE = r"/"; t_MODULO = r"%"; t_EQUALS = r"="
 t_LPAREN = r"\("; t_RPAREN = r"\)"; t_LBRACE = r"\{"; t_RBRACE = r"\}"
 t_LBRACKET = r"\["; t_RBRACKET = r"\]"
 t_SEMICOLON = r";"
@@ -143,7 +145,7 @@ t_COLON = r":"; t_COMMA = r","; t_NOT = r"!"; t_LT = r"<"; t_GT = r">"; t_AMPERS
 
 # Reglas para macros específicas (deben ir ANTES de t_identifier)
 def t_CONSOLE_PRINT(t):
-    r'println!'
+    r'(println|print|eprintln|eprint)!'
     t.literal = t.value
     return t
 
@@ -198,6 +200,10 @@ def t_char(t):
     return t
 
 # Comentarios
+def t_doc_comment(t):
+    r"///.*"
+    pass  # Ignorar
+
 def t_comment(t):
     r"//.*"
     pass  # Ignorar

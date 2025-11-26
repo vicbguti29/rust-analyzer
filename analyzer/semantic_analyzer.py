@@ -27,15 +27,16 @@ class SymbolTable:
         if len(self.scope_stack) > 1:
             self.scope_stack.pop()
     
-    def add(self, name, type, is_mutable=False, line_no=None):
+    def add(self, name, type, is_mutable=False, is_initialized=True, line_no=None):
         """
         Añade un símbolo al alcance actual.
-        El símbolo se registra con su tipo, mutabilidad y línea de declaración.
+        El símbolo se registra con su tipo, mutabilidad, estado de inicialización y línea.
         """
         current_scope_idx = self.scope_stack[-1]
         self.scopes[current_scope_idx][name] = {
             'type': type,
             'is_mutable': is_mutable,
+            'is_initialized': is_initialized,
             'scope_level': len(self.scope_stack) - 1,
             'line_declared': line_no
         }
@@ -120,6 +121,11 @@ class SemanticAnalyzer:
             if token_type == 'IDENT':
                 symbol, _ = self.symbol_table.lookup(value)
                 if symbol:
+                    # Nueva Regla: Validar que la variable esté inicializada antes de ser usada.
+                    if not symbol['is_initialized']:
+                        error_msg = f"Error Semántico (Línea {line_no}): se usó la variable no inicializada '{value}'."
+                        self.errors.append(error_msg)
+                        return 'uninitialized'
                     return symbol['type']
                 else:
                     # REGLA 1: Validación de Existencia
@@ -144,6 +150,23 @@ class SemanticAnalyzer:
             first_elem_type = self.get_expression_type(elements[0], line_no)
             return f'[{first_elem_type}; {len(elements)}]'
 
+        elif node_type == 'array_repeat':
+            value_type = self.get_expression_type(expr_node[1], line_no)
+            size_expr = expr_node[2]
+            size_type = self.get_expression_type(size_expr, line_no)
+            
+            # Allow any integer type for array size
+            if size_type not in {'i32', 'u32', 'i64', 'u64', 'i16', 'u16', 'i8', 'u8'}:
+                error_msg = f"Error Semántico (Línea {line_no}): el tamaño del array debe ser un entero, pero se encontró tipo '{size_type}'."
+                self.errors.append(error_msg)
+
+            # Try to get the literal value for the type string, otherwise use placeholder
+            size_val = '_'
+            if size_expr[0] == 'literal' and size_expr[2] == 'NUMBER':
+                size_val = size_expr[1]
+
+            return f'[{value_type}; {size_val}]'
+
         elif node_type == 'tuple_literal':
             elements = expr_node[1]
             if not elements:
@@ -159,6 +182,12 @@ class SemanticAnalyzer:
         _program, statements = node
         for stmt in statements:
             self.visit(stmt)
+
+    def visit_array_repeat(self, node):
+        # AST: ('array_repeat', value_expr, size_expr)
+        _array_repeat, value_expr, size_expr = node
+        self.visit(value_expr)
+        self.visit(size_expr)
 
     # Manejo de scope de función y verificación de return
     def visit_fn(self, node):
@@ -184,35 +213,76 @@ class SemanticAnalyzer:
         # AST: ('let', var_name, declared_type, expr_node, line_no)
         _let, var_name, declared_type, expr_node, line_no = node
         
-        # Visitar la expresión para análisis de operaciones
-        self.visit(expr_node)
-        
-        evaluated_type = self.get_expression_type(expr_node)
+        if expr_node:
+            # Variable con inicialización
+            self.visit(expr_node)
+            evaluated_type = self.get_expression_type(expr_node, line_no)
 
-        if declared_type and evaluated_type != 'unknown' and declared_type != evaluated_type:
-            error_msg = f"Error Semántico (Línea {line_no}): Discrepancia de tipos. Se esperaba tipo '{declared_type}' pero se encontró tipo '{evaluated_type}' en la asignación de '{var_name}'."
-            self.errors.append(error_msg)
-            return
+            if declared_type and evaluated_type != 'unknown' and declared_type != evaluated_type:
+                error_msg = f"Error Semántico (Línea {line_no}): Discrepancia de tipos. Se esperaba tipo '{declared_type}' pero se encontró tipo '{evaluated_type}' en la asignación de '{var_name}'."
+                self.errors.append(error_msg)
+                return
 
-        final_type = declared_type or evaluated_type
-        self.symbol_table.add(var_name, final_type, is_mutable=False)
+            final_type = declared_type or evaluated_type
+            self.symbol_table.add(var_name, final_type, is_mutable=False, is_initialized=True, line_no=line_no)
+        else:
+            # Variable sin inicialización (debe tener tipo explícito)
+            if not declared_type:
+                # Esto debería ser un error sintáctico, pero lo validamos por si acaso.
+                error_msg = f"Error Semántico (Línea {line_no}): las declaraciones sin valor deben tener un tipo explícito."
+                self.errors.append(error_msg)
+                return
+            self.symbol_table.add(var_name, declared_type, is_mutable=False, is_initialized=False, line_no=line_no)
+
 
     def visit_let_mut(self, node):
         # AST: ('let_mut', var_name, declared_type, expr_node, line_no)
         _let, var_name, declared_type, expr_node, line_no = node
         
-        # Visitar la expresión para análisis de operaciones
+        if expr_node:
+            # Variable con inicialización
+            self.visit(expr_node)
+            evaluated_type = self.get_expression_type(expr_node, line_no)
+
+            if declared_type and evaluated_type != 'unknown' and declared_type != evaluated_type:
+                error_msg = f"Error Semántico (Línea {line_no}): Discrepancia de tipos. Se esperaba tipo '{declared_type}' pero se encontró tipo '{evaluated_type}' en la asignación de '{var_name}'."
+                self.errors.append(error_msg)
+                return
+
+            final_type = declared_type or evaluated_type
+            self.symbol_table.add(var_name, final_type, is_mutable=True, is_initialized=True, line_no=line_no)
+        else:
+            # Variable sin inicialización (debe tener tipo explícito)
+            if not declared_type:
+                error_msg = f"Error Semántico (Línea {line_no}): las declaraciones sin valor deben tener un tipo explícito."
+                self.errors.append(error_msg)
+                return
+            self.symbol_table.add(var_name, declared_type, is_mutable=True, is_initialized=False, line_no=line_no)
+
+    def visit_const(self, node):
+        # AST: ('const', name, type, expr)
+        _const, name, declared_type, expr_node = node
         self.visit(expr_node)
-        
         evaluated_type = self.get_expression_type(expr_node)
-
-        if declared_type and evaluated_type != 'unknown' and declared_type != evaluated_type:
-            error_msg = f"Error Semántico (Línea {line_no}): Discrepancia de tipos. Se esperaba tipo '{declared_type}' pero se encontró tipo '{evaluated_type}' en la asignación de '{var_name}'."
-            self.errors.append(error_msg)
-            return
-
+        # NOTE: We could add type discrepancy check here too if needed
         final_type = declared_type or evaluated_type
-        self.symbol_table.add(var_name, final_type, is_mutable=True)
+        self.symbol_table.add(name, final_type, is_mutable=False)
+
+    def visit_static(self, node):
+        # AST: ('static', name, type, expr)
+        _static, name, declared_type, expr_node = node
+        self.visit(expr_node)
+        evaluated_type = self.get_expression_type(expr_node)
+        final_type = declared_type or evaluated_type
+        self.symbol_table.add(name, final_type, is_mutable=False)
+
+    def visit_static_mut(self, node):
+        # AST: ('static_mut', name, type, expr)
+        _static_mut, name, declared_type, expr_node = node
+        self.visit(expr_node)
+        evaluated_type = self.get_expression_type(expr_node)
+        final_type = declared_type or evaluated_type
+        self.symbol_table.add(name, final_type, is_mutable=True)
 
     # ============================================================================
     # REGLA 1: VALIDACIÓN DE EXISTENCIA DE IDENTIFICADORES
@@ -234,7 +304,7 @@ class SemanticAnalyzer:
         # Visitar la expresión para análisis de operaciones
         self.visit(expr_node)
 
-        symbol, symbol_scope_idx = self.symbol_table.lookup(var_name)
+        symbol, scope_idx = self.symbol_table.lookup(var_name)
         
         # REGLA 1 (Validación de Existencia - vicbguti29)
         if not symbol:
@@ -257,14 +327,20 @@ class SemanticAnalyzer:
         if not symbol['is_mutable']:
             error_msg = f"Error Semántico (Línea {line_no}): No se puede asignar a la variable inmutable '{var_name}'. Las variables deben ser declaradas con 'mut' para poder ser reasignadas."
             self.errors.append(error_msg)
-            return # Detenemos el análisis para esta línea
-
+            # No retornamos aquí para poder detectar también el error de tipo si existe.
+        
         # REGLA 4 (Discrepancia de Tipos en Reasignación - Alvascon)
-        new_type = self.get_expression_type(expr_node)
+        new_type = self.get_expression_type(expr_node, line_no)
         
         if new_type != 'unknown' and symbol['type'] != new_type:
             error_msg = f"Error Semántico (Línea {line_no}): Discrepancia de tipos en la reasignación. La variable '{var_name}' tiene el tipo '{symbol['type']}', pero se intentó asignar un valor de tipo '{new_type}'."
             self.errors.append(error_msg)
+
+        # Si la asignación es válida (sin errores hasta ahora), marcamos la variable como inicializada.
+        # Esta es una simplificación; una implementación más robusta comprobaría si se añadieron errores
+        # *en esta función específica* antes de actualizar el estado.
+        if symbol: # Asegurarse de que el símbolo existe antes de intentar actualizarlo
+            self.symbol_table.scopes[scope_idx][var_name]['is_initialized'] = True
 
     # ============================================================================
     # REGLA 6: COMPATIBILIDAD DE TIPOS EN OPERACIONES ARITMÉTICAS

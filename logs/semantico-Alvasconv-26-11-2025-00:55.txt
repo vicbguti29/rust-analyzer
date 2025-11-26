@@ -1,3 +1,23 @@
+================================================================================
+REPORTE DE ANÁLISIS SEMÁNTICO
+================================================================================
+Fecha y Hora: 26-11-2025 00:55:49
+Desarrollador: Alvasconv
+================================================================================
+
+REGLAS SEMÁNTICAS IMPLEMENTADAS:
+--------------------------------------------------------------------------------
+1. Validación de Existencia de Identificadores (REGLA 1)
+   - Verifica que toda variable/función sea declarada antes de usarse
+   - Busca el identificador desde el alcance actual hasta el global
+
+2. Alcance Local (REGLA 2)
+   - Verifica que variables no sean accedidas fuera de su alcance
+   - No se puede acceder a variables de alcances internos finalizados
+--------------------------------------------------------------------------------
+
+CÓDIGO FUENTE ANALIZADO:
+--------------------------------------------------------------------------------
 // Desarrollado por: Alvascon
 //
 // Este archivo contiene un programa Rust sintácticamente válido que
@@ -153,3 +173,13 @@ fn main() {
     // Sentencia de retorno
     return;
 }
+--------------------------------------------------------------------------------
+
+ERRORES SEMÁNTICOS ENCONTRADOS: 3
+--------------------------------------------------------------------------------
+
+1. Error Semántico (Línea 103): Discrepancia de tipos. Se esperaba tipo 'String' pero se encontró tipo '&str' en la asignación de 'd'.
+
+2. Error Semántico (Línea 119): Identificador no encontrado. La variable 'new' no ha sido declarada en este alcance.
+
+3. Error Semántico (Línea 121): Identificador no encontrado. La variable 'new' no ha sido declarada en este alcance.
