@@ -116,9 +116,9 @@ fn main() {
 
     if is_ok {
         let mut var_new = 0;
-        var new = 10;
+        new = 10;
     } else {
-        var new = 15;
+        new = 15;
     }
 
     let mut counter = 0;

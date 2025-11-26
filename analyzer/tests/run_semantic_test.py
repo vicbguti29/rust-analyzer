@@ -15,7 +15,7 @@ from analyzer.semantic_analyzer import semantic, log_semantic_errors
 
 def main():
     # Apuntar al archivo de pruebas de REGLA 6, 7 y flujo de control
-    test_file = 'docs/algoritmos_de_prueba/prb_regla6_7_flujo.rs'
+    test_file = 'docs/algoritmos_de_prueba/prb_semantico.rs'
     
     if not os.path.exists(test_file):
         print(f"Error: No se encontró el archivo {test_file}")
