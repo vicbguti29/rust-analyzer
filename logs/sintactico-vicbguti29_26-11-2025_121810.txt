@@ -1,0 +1,140 @@
+================================================================================
+REPORTE DE PRUEBAS - SOLICITAR DATOS POR TECLADO v2
+================================================================================
+Fecha y Hora: 26-11-2025 12:18:10
+Desarrollador: vicbguti29
+Regla: Solicitar Datos por Teclado (input/stdin)
+================================================================================
+
+RESUMEN DE RESULTADOS:
+--------------------------------------------------------------------------------
+Total de pruebas: 12
+Tests exitosos: 11
+Tests fallidos: 1
+Tasa de éxito: 91.67%
+
+DESGLOSE POR TIPO:
+  Casos válidos (esperados PASAR): 7 (de los cuales 7 pasaron)
+  Casos inválidos (esperados FALLAR): 5 (de los cuales 4 detectaron errores)
+
+DETALLE DE PRUEBAS:
+--------------------------------------------------------------------------------
+
+✓ Prueba: string_new_simple
+  Descripción: Llamada a String::new() para crear String
+  Código: fn main() { let mut buffer = String::new(); }
+  Esperado: PASS | Actual: PASS
+  Sin errores sintácticos
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: variable_asignacion
+  Descripción: Asignación y reasignación de String
+  Código: fn main() { let mut entrada = String::new(); let valor = entrada; }
+  Esperado: PASS | Actual: PASS
+  Sin errores sintácticos
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: metodo_basico
+  Descripción: String::new() en declaración de variable
+  Código: fn main() { let mut buf = String::new(); }
+  Esperado: PASS | Actual: PASS
+  Sin errores sintácticos
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: referencia_simple
+  Descripción: Referencia inmutable a variable
+  Código: fn main() { let mut x = 5; let ref_x = &x; }
+  Esperado: PASS | Actual: PASS
+  Sin errores sintácticos
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: referencia_mutable
+  Descripción: Referencia mutable a variable
+  Código: fn main() { let mut buffer = String::new(); let ref_mut = &mut buffer; }
+  Esperado: PASS | Actual: PASS
+  Sin errores sintácticos
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: funcion_con_parametro
+  Descripción: Función con parámetro de referencia
+  Código: fn procesar(entrada: &str) { }
+  Esperado: PASS | Actual: PASS
+  Sin errores sintácticos
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: if_con_variable
+  Descripción: String::new() dentro de bloque if
+  Código: fn main() { let mut x = 5; if x > 0 { let mut buffer = String::new(); } }
+  Esperado: PASS | Actual: PASS
+  Sin errores sintácticos
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: error_missing_semicolon
+  Descripción: ERROR: Falta punto y coma después de String::new()
+  Código: fn main() { let mut buffer = String::new() }
+  Esperado: FAIL | Actual: FAIL
+  Errores encontrados: 1
+    1. Línea 1: Syntax error at line 1: unexpected token '}' (RBRACE)
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: error_unbalanced_parens
+  Descripción: ERROR: Paréntesis sin cerrar en String::new
+  Código: fn main() { let mut buffer = String::new(; }
+  Esperado: FAIL | Actual: FAIL
+  Errores encontrados: 1
+    1. Línea 1: Syntax error at line 1: unexpected token ';' (SEMICOLON)
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: error_missing_parens_in_call
+  Descripción: ERROR: String::new sin paréntesis (acceso incorrecto)
+  Código: fn main() { let mut buffer = String::new; }
+  Esperado: FAIL | Actual: FAIL
+  Errores encontrados: 1
+    1. Línea 1: Syntax error at line 1: unexpected token ';' (SEMICOLON)
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✓ Prueba: error_no_expression
+  Descripción: ERROR: Asignación sin expresión válida
+  Código: fn main() { let mut x = ; }
+  Esperado: FAIL | Actual: FAIL
+  Errores encontrados: 1
+    1. Línea 1: Syntax error at line 1: unexpected token ';' (SEMICOLON)
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+✗ Prueba: error_invalid_reference
+  Descripción: ERROR: Referencia a variable no definida
+  Código: fn main() { let ref_x = &undefined_var; }
+  Esperado: FAIL | Actual: PASS
+  Sin errores sintácticos
+  AST generado: Sí
+
+--------------------------------------------------------------------------------
+
+
+CONCLUSIONES:
+--------------------------------------------------------------------------------
+⚠ 11 de 12 pruebas pasaron (91.7%).
+  La implementación es mayormente correcta pero requiere ajustes menores.
+--------------------------------------------------------------------------------
