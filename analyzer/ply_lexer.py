@@ -98,12 +98,14 @@ tokens = (
     "RBRACKET", # ]
     "SEMICOLON",  # ;
     "COLON",  # :
+    "COLONCOLON",  # ::
+    "DOT",  # .
     "COMMA",  # ,
     # Operadores de referencia
     "AMPERSAND", # &
     # Comentarios
     "COMMENT",  # // comentarios
-)
+    )
 # Palabras reservadas de Rust
 reserved = {
     "if": "IF", "else": "ELSE", "while": "WHILE", "for": "FOR", "loop": "LOOP", 
@@ -121,6 +123,7 @@ reserved = {
 # --- Reglas de Tokens ---
 
 # Operadores compuestos (deben ir primero)
+def t_COLONCOLON(t): r'::'; t.literal = t.value; return t
 def t_ARROW(t): r'->'; t.literal = t.value; return t
 def t_DOTDOT(t): r'\.\.'; t.literal = t.value; return t
 def t_EQ(t): r'=='; t.literal = t.value; return t
@@ -139,7 +142,7 @@ t_PLUS = r"\+"; t_MINUS = r"-"; t_TIMES = r"\*"; t_DIVIDE = r"/"; t_EQUALS = r"=
 t_LPAREN = r"\("; t_RPAREN = r"\)"; t_LBRACE = r"\{"; t_RBRACE = r"\}"
 t_LBRACKET = r"\["; t_RBRACKET = r"\]"
 t_SEMICOLON = r";"
-t_COLON = r":"; t_COMMA = r","; t_NOT = r"!"; t_LT = r"<"; t_GT = r">"; t_AMPERSAND = r"&"
+t_COLON = r":"; t_DOT = r"\."; t_COMMA = r","; t_NOT = r"!"; t_LT = r"<"; t_GT = r">"; t_AMPERSAND = r"&"
 
 # Reglas para macros específicas (deben ir ANTES de t_identifier)
 def t_CONSOLE_PRINT(t):
