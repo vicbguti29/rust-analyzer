@@ -215,14 +215,19 @@ def p_expr_paren(p):
 # Literales
 def p_expr_literal(p):
     """expr : IDENT
-            | NUMBER
-            | FLOAT
-            | STRING
-            | TRUE
-            | FALSE"""
+             | NUMBER
+             | FLOAT
+             | STRING
+             | TRUE
+             | FALSE"""
     # Guardamos el tipo de token junto con el valor literal para
     # poder distinguir entre un IDENT (nombre de variable) y un STRING.
     p[0] = ('literal', p.slice[1].literal, p.slice[1].type)
+
+# Path expression (for enum variants and other path-based expressions)
+def p_expr_path_expr(p):
+    """expr : path"""
+    p[0] = ('path_expr', p[1])
 
 # Array literal
 def p_expr_array_literal(p):
