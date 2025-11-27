@@ -30,7 +30,7 @@ precedence = (
     ('left', 'OR'),
     ('left', 'AND'),
     ('left', 'EQ', 'NEQ', 'LT', 'LTE', 'GT', 'GTE'),
-    ('left', 'DOTDOT', 'DOUBLE_COLON'),
+    ('left', 'DOTDOT', 'COLONCOLON'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
     ('right', 'NOT'),
@@ -207,10 +207,6 @@ def p_expr_paren(p):
     """expr : LPAREN expr RPAREN"""
     p[0] = p[2]
 
-
-def p_expr_path(p):
-    """expr : expr DOUBLE_COLON IDENT"""
-    p[0] = ('path', p[1], p[3])
 
 
 # Closure expression (simple version for no-args)
