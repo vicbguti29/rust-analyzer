@@ -99,4 +99,32 @@ fn main() {
     // --- Pruebas para la sintaxis de array [valor; tamaño] ---
     let array_repeat = [0; 5]; // Válido
     let array_repeat_error = [0; false]; // Error: el tamaño debe ser un entero
+
+    // --- Pruebas Semánticas para Closures ---
+
+    // Caso Válido: La closure se asigna a una variable
+    let mi_closure = |a: i32, b: i32| -> i32 {
+        return a + b;
+    };
+
+    // Caso Válido: Uso de variable del scope exterior
+    let factor = 10;
+    let multiplicar = |n| n * factor;
+    // let resultado_closure = multiplicar(5); // Llamada a closure no soportada por el parser aún
+
+    // --- Casos que DEBERÍAN producir errores semánticos (una vez implementado) ---
+
+    // Error Semántico: Usar una variable no definida dentro de la closure
+    let error_closure_1 = || z + 1; 
+
+    // Error Semántico: Discrepancia de tipos en el cuerpo de la closure
+    let error_closure_2 = |a: i32| -> i32 {
+        return "no soy un i32";
+    };
+
+    // Error Semántico: Uso de variable no inicializada dentro de la closure
+    let error_closure_3 = || {
+        let x: i32;
+        return x; // 'x' no está inicializada
+    };
 }

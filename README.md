@@ -25,15 +25,7 @@ rust-analyzer/
 
 **ubicación:** rust-analyzer/docs/algoritmos_de_prueba
 
-```
-algoritmos_de_prueba/
-├── algoritmo_de_prueba.rs     # Algoritmo de prueba de Angello Vasconez
-├── test_lexer.rs              # Algortimo de prueba de Victor Borbor
-├── test_sintactico.rs         # Algortimo de prueba para el analizador sintáctico
-├── prb_sintactico_valido.rs   # Algortimo de prueba para el sintactico, genera correctamente el AST
-├── prb_sintactico_errores.rs  # Algortimo de prueba para el sintactico, presenta errores
-└── prb_semantico.rs           # Algortimo de prueba para el analizador semantico, presenta casos válidos e inválidos
-```
+aqui consta todos los archivos con codigo en Rust para ejecutar pruebas validas y con errores de los analizadores.
 
 ### Ejecución de pruebas del Analizador Sintáctico
 

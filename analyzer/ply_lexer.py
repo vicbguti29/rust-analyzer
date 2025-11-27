@@ -36,23 +36,14 @@ tokens = (
     # Palabras clave de estructura y módulos
     "STRUCT",
     "ENUM",
-    "MOD",
-    "USE",
-    "PUB",
     "SELF",
     "SELF_TYPE",
     # Palabras clave de traits e implementación
     "TRAIT",
     "IMPL",
-    "WHERE",
     # Palabras clave de control de memoria
-    "BOX",
-    "VEC",
-    "OPTION",
-    "SOME",
-    "NONE",
+
     # Palabras clave de I/O
-    "PRINTLN",
     "INPUT",
     "IN",
     # Identificadores y literales
@@ -61,10 +52,7 @@ tokens = (
     "FLOAT",  # números con punto decimal y/o exponente
     "STRING",  # "cadenas"
     # Macros
-    "CONSOLE_PRINT",  # println!
-    "VEC_CREATE",  # vec!
-    # Errores
-    "ERROR",  # Token para caracteres no reconocidos
+    "CONSOLE_PRINT",
     # Operadores y símbolos
     "PLUS",  # +
     "MINUS",  # -
@@ -102,140 +90,42 @@ tokens = (
     "COLONCOLON",  # ::
     "DOT",  # .
     "COMMA",  # ,
+    "PIPE",  # |
     # Operadores de referencia
     "AMPERSAND",  # &
     # Comentarios
-    "COMMENT",  # // comentarios
-    "DOC_COMMENT",  # /// comentarios
 )
 # Palabras reservadas de Rust
 reserved = {
-    "if": "IF",
-    "else": "ELSE",
-    "while": "WHILE",
-    "for": "FOR",
-    "loop": "LOOP",
-    "break": "BREAK",
-    "continue": "CONTINUE",
-    "fn": "FN",
-    "let": "LET",
-    "mut": "MUT",
-    "return": "RETURN",
-    "const": "CONST",
-    "static": "STATIC",
-    "i32": "I32",
-    "i64": "I64",
-    "u32": "U32",
-    "u64": "U64",
-    "f32": "F32",
-    "f64": "F64",
-    "bool": "BOOL",
-    "char": "CHAR",
-    "str": "STR",
-    "String": "STRING_TYPE",
-    "true": "TRUE",
-    "false": "FALSE",
-    "struct": "STRUCT",
-    "enum": "ENUM",
-    "mod": "MOD",
-    "use": "USE",
-    "pub": "PUB",
-    "self": "SELF",
-    "Self": "SELF_TYPE",
-    "trait": "TRAIT",
-    "impl": "IMPL",
-    "where": "WHERE",
-    "Box": "BOX",
-    "Vec": "VEC",
-    "Option": "OPTION",
-    "Some": "SOME",
-    "None": "NONE",
-    "println": "PRINTLN",
-    "input": "INPUT",
-    "in": "IN",
+    "if": "IF", "else": "ELSE", "while": "WHILE", "for": "FOR", "loop": "LOOP", 
+    "break": "BREAK", "continue": "CONTINUE", "fn": "FN", "let": "LET", "mut": "MUT", 
+    "return": "RETURN", "const": "CONST", "static": "STATIC", "i32": "I32", 
+    "i64": "I64", "u32": "U32", "u64": "U64", "f32": "F32", "f64": "F64", 
+    "bool": "BOOL", "char": "CHAR", "str": "STR", "String": "STRING_TYPE", 
+    "true": "TRUE", "false": "FALSE", "struct": "STRUCT", "enum": "ENUM", 
+    "self": "SELF", "Self": "SELF_TYPE", 
+    "trait": "TRAIT", "impl": "IMPL",
+    "input": "INPUT", "in": "IN",
 }
 
 # --- Reglas de Tokens ---
 
 
 # Operadores compuestos (deben ir primero)
-def t_COLONCOLON(t):
-    r"::"
-    t.literal = t.value
-    return t
-
-
-def t_ARROW(t):
-    r"->"
-    t.literal = t.value
-    return t
-
-
-def t_DOTDOT(t):
-    r"\.\."
-    t.literal = t.value
-    return t
-
-
-def t_EQ(t):
-    r"=="
-    t.literal = t.value
-    return t
-
-
-def t_NEQ(t):
-    r"!="
-    t.literal = t.value
-    return t
-
-
-def t_LTE(t):
-    r"<="
-    t.literal = t.value
-    return t
-
-
-def t_GTE(t):
-    r">="
-    t.literal = t.value
-    return t
-
-
-def t_PLUS_EQUALS(t):
-    r"\+="
-    t.literal = t.value
-    return t
-
-
-def t_MINUS_EQUALS(t):
-    r"-="
-    t.literal = t.value
-    return t
-
-
-def t_TIMES_EQUALS(t):
-    r"\*="
-    t.literal = t.value
-    return t
-
-
-def t_DIVIDE_EQUALS(t):
-    r"/="
-    t.literal = t.value
-    return t
-
-
-def t_AND(t):
-    r"&&"
-    t.literal = t.value
-    return t
-
-
-def t_OR(t):
-    r"\|\|"
-    t.literal = t.value
-    return t
-
+def t_ARROW(t): r'->'; t.literal = t.value; return t
+def t_DOTDOT(t): r'\.\.'; t.literal = t.value; return t
+def t_EQ(t): r'=='; t.literal = t.value; return t
+def t_NEQ(t): r'!='; t.literal = t.value; return t
+def t_LTE(t): r'<='; t.literal = t.value; return t
+def t_GTE(t): r'>='; t.literal = t.value; return t
+def t_PLUS_EQUALS(t): r'\+='; t.literal = t.value; return t
+def t_MINUS_EQUALS(t): r'-='; t.literal = t.value; return t
+def t_TIMES_EQUALS(t): r'\*='; t.literal = t.value; return t
+def t_DIVIDE_EQUALS(t): r'/='; t.literal = t.value; return t
+def t_AND(t): r'&&'; t.literal = t.value; return t
+def t_OR(t): r'\|\|'; t.literal = t.value; return t
+def t_COLONCOLON(t): r"::"; t.literal = t.value; return t
+def t_PIPE(t): r'\|'; t.literal = t.value; return t
 
 # Operadores y delimitadores simples
 t_PLUS = r"\+"

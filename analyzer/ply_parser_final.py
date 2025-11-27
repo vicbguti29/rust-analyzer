@@ -30,7 +30,7 @@ precedence = (
     ('left', 'OR'),
     ('left', 'AND'),
     ('left', 'EQ', 'NEQ', 'LT', 'LTE', 'GT', 'GTE'),
-    ('left', 'DOTDOT'),
+    ('left', 'DOTDOT', 'DOUBLE_COLON'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE', 'MODULO'),
     ('right', 'NOT'),
@@ -162,7 +162,7 @@ def p_expr_arithmetic(p):
             | expr TIMES expr
             | expr DIVIDE expr
             | expr MODULO expr"""
-    p[0] = ('binop', p[1], p[2], p[3])
+    p[0] = ('binop', p[1], p[2], p[3], p.lineno(2))
 
 
 # Comparación
@@ -207,6 +207,13 @@ def p_expr_paren(p):
     """expr : LPAREN expr RPAREN"""
     p[0] = p[2]
 
+
+def p_expr_path(p):
+    """expr : expr DOUBLE_COLON IDENT"""
+    p[0] = ('path', p[1], p[3])
+
+
+# Closure expression (simple version for no-args)
 
 
 # Literales
@@ -397,13 +404,53 @@ def p_impl_items(p):
 
 # Struct initialization (as a specific initializer, not a general expression)
 def p_struct_init(p):
-    """struct_init : IDENT LBRACE RBRACE"""
-    p[0] = ('struct_init', p[1], [])
+    """struct_init : IDENT LBRACE opt_struct_fields RBRACE"""
+    p[0] = ('struct_init', p[1], p[3])
+
+def p_opt_struct_fields(p):
+    """opt_struct_fields : non_empty_struct_fields
+                         | non_empty_struct_fields COMMA
+                         | empty"""
+    p[0] = p[1] if p[1] else []
+
+def p_non_empty_struct_fields(p):
+    """non_empty_struct_fields : struct_field
+                               | non_empty_struct_fields COMMA struct_field"""
+    if len(p) == 2:
+        p[0] = [p[1]]
+    else:
+        p[0] = p[1] + [p[3]]
+
+def p_struct_field(p):
+    """struct_field : IDENT COLON expr"""
+    p[0] = ('struct_field', p[1], p[3])
+
 
 def p_initializer(p):
     """initializer : expr
-                   | struct_init"""
+                   | struct_init
+                   | closure_expr"""
     p[0] = p[1]
+
+def p_closure_expr(p):
+    """closure_expr : OR opt_return_type closure_body
+                    | PIPE params_list PIPE opt_return_type closure_body"""
+    # Handles closures with optional return type and expression/block bodies
+    if p[1] == '||': # No-arg closure
+        # p[2] is opt_return_type, p[3] is closure_body
+        p[0] = ('closure', [], p[2], p[3]) 
+    else: # Closure with args
+        # p[2] is params_list, p[4] is opt_return_type, p[5] is closure_body
+        p[0] = ('closure', p[2], p[4], p[5])
+
+def p_closure_body(p):
+    """closure_body : expr
+                    | block"""
+    p[0] = p[1]
+
+def p_block(p):
+    """block : LBRACE opt_stmts RBRACE"""
+    p[0] = ('block', p[2])
 
 # Input expression
 def p_expr_input(p):
@@ -461,11 +508,22 @@ def p_params_list(p):
 
 def p_param(p):
     """param : IDENT COLON type
+             | IDENT
              | AMPERSAND SELF""" # Añadir &self
-    if len(p) == 4:
+    if len(p) == 4: # IDENT: type
         p[0] = ('param', p[1], p[3])
+    elif len(p) == 3: # &self
+        p[0] = ('param', p[1] + p[2], None)
+    else: # IDENT
+        p[0] = ('param', p[1], None)
+
+def p_opt_return_type(p):
+    """opt_return_type : ARROW type
+                       | empty"""
+    if p[1]:
+        p[0] = p[2]
     else:
-        p[0] = ('param', p[1] + p[2], None) # &self, tipo None por ahora
+        p[0] = None
 
 # TODO: Funciones con múltiples parámetros - A CARGO DE COMPAÑERO
 

@@ -1,0 +1,287 @@
+=== ANÁLISIS LÉXICO (PLY) ===
+Desarrollador: Alvasconv
+Fecha: 26-11-2025 13:40:49
+
+CÓDIGO:
+// --- Archivo de Prueba para el Analizador Léxico ---
+// Este archivo contiene ejemplos de la mayoría de tokens válidos
+// y varios tokens inválidos para verificar el lexer.
+
+/* 
+  Comentario de bloque.
+  Keywords: let, mut, const, static, fn, return, if, else, loop, while, for, in, break, continue
+  struct, enum, impl, trait, self, Self, true, false.
+  Tipos: i32, f64, bool, char, str, String.
+  Macros: println!, print!, eprintln!, eprint!
+*/
+
+/// Comentario de documentación.
+
+// --- Declaraciones y Palabras Clave ---
+const MAX_SIZE: i32 = 100;
+static mut COUNTER: i32 = 0;
+
+fn mi_funcion(param: i32) -> bool {
+    let mut variable: bool = false;
+    if variable == true {
+        // no hacer nada
+    } else {
+        // tampoco
+    }
+    return variable;
+}
+
+struct MiStruct {}
+enum MiEnum {}
+trait MiTrait {}
+implement MiTrait for MiStruct {}
+
+// --- Expresiones y Operadores ---
+fn main() {
+    let x = (10 + 20) * 3 / 2 - 1;
+    let y = 10 % 3;
+    let z = x > y && y <= 1 || !false;
+    let range = 0..100;
+    
+    let mut a = 10;
+    a += 5;
+    a -= 1;
+    a *= 2;
+    a /= 3;
+
+    // --- Literales y Otros ---
+    let mi_string = "hola\nmundo";
+    let mi_char = 'c';
+    let mi_float = 3.14159;
+    let mi_array = [1, 2, 3];
+    let mi_closure = |a: i32| a + 1;
+    let mi_closure_vacia = || 1;
+    let referencia = &x;
+    
+    // --- Macros de Impresión ---
+    println!("Hola");
+    print!("Mundo");
+    eprintln!("Error");
+    eprint!("Grave");
+    
+    // --- Caracteres Inválidos ---
+    // El lexer debería reportar errores para los siguientes caracteres:
+    @ $ ? #
+}
+
+TOKENS:
+  CONST                | const                          | Línea 16
+  IDENT                | MAX_SIZE                       | Línea 16
+  COLON                | :                              | Línea 16
+  I32                  | i32                            | Línea 16
+  EQUALS               | =                              | Línea 16
+  NUMBER               | 100                            | Línea 16
+  SEMICOLON            | ;                              | Línea 16
+  STATIC               | static                         | Línea 17
+  MUT                  | mut                            | Línea 17
+  IDENT                | COUNTER                        | Línea 17
+  COLON                | :                              | Línea 17
+  I32                  | i32                            | Línea 17
+  EQUALS               | =                              | Línea 17
+  NUMBER               | 0                              | Línea 17
+  SEMICOLON            | ;                              | Línea 17
+  FN                   | fn                             | Línea 19
+  IDENT                | mi_funcion                     | Línea 19
+  LPAREN               | (                              | Línea 19
+  IDENT                | param                          | Línea 19
+  COLON                | :                              | Línea 19
+  I32                  | i32                            | Línea 19
+  RPAREN               | )                              | Línea 19
+  ARROW                | ->                             | Línea 19
+  BOOL                 | bool                           | Línea 19
+  LBRACE               | {                              | Línea 19
+  LET                  | let                            | Línea 20
+  MUT                  | mut                            | Línea 20
+  IDENT                | variable                       | Línea 20
+  COLON                | :                              | Línea 20
+  BOOL                 | bool                           | Línea 20
+  EQUALS               | =                              | Línea 20
+  FALSE                | false                          | Línea 20
+  SEMICOLON            | ;                              | Línea 20
+  IF                   | if                             | Línea 21
+  IDENT                | variable                       | Línea 21
+  EQ                   | ==                             | Línea 21
+  TRUE                 | true                           | Línea 21
+  LBRACE               | {                              | Línea 21
+  RBRACE               | }                              | Línea 23
+  ELSE                 | else                           | Línea 23
+  LBRACE               | {                              | Línea 23
+  RBRACE               | }                              | Línea 25
+  RETURN               | return                         | Línea 26
+  IDENT                | variable                       | Línea 26
+  SEMICOLON            | ;                              | Línea 26
+  RBRACE               | }                              | Línea 27
+  STRUCT               | struct                         | Línea 29
+  IDENT                | MiStruct                       | Línea 29
+  LBRACE               | {                              | Línea 29
+  RBRACE               | }                              | Línea 29
+  ENUM                 | enum                           | Línea 30
+  IDENT                | MiEnum                         | Línea 30
+  LBRACE               | {                              | Línea 30
+  RBRACE               | }                              | Línea 30
+  TRAIT                | trait                          | Línea 31
+  IDENT                | MiTrait                        | Línea 31
+  LBRACE               | {                              | Línea 31
+  RBRACE               | }                              | Línea 31
+  IDENT                | implement                      | Línea 32
+  IDENT                | MiTrait                        | Línea 32
+  FOR                  | for                            | Línea 32
+  IDENT                | MiStruct                       | Línea 32
+  LBRACE               | {                              | Línea 32
+  RBRACE               | }                              | Línea 32
+  FN                   | fn                             | Línea 35
+  IDENT                | main                           | Línea 35
+  LPAREN               | (                              | Línea 35
+  RPAREN               | )                              | Línea 35
+  LBRACE               | {                              | Línea 35
+  LET                  | let                            | Línea 36
+  IDENT                | x                              | Línea 36
+  EQUALS               | =                              | Línea 36
+  LPAREN               | (                              | Línea 36
+  NUMBER               | 10                             | Línea 36
+  PLUS                 | +                              | Línea 36
+  NUMBER               | 20                             | Línea 36
+  RPAREN               | )                              | Línea 36
+  TIMES                | *                              | Línea 36
+  NUMBER               | 3                              | Línea 36
+  DIVIDE               | /                              | Línea 36
+  NUMBER               | 2                              | Línea 36
+  MINUS                | -                              | Línea 36
+  NUMBER               | 1                              | Línea 36
+  SEMICOLON            | ;                              | Línea 36
+  LET                  | let                            | Línea 37
+  IDENT                | y                              | Línea 37
+  EQUALS               | =                              | Línea 37
+  NUMBER               | 10                             | Línea 37
+  MODULO               | %                              | Línea 37
+  NUMBER               | 3                              | Línea 37
+  SEMICOLON            | ;                              | Línea 37
+  LET                  | let                            | Línea 38
+  IDENT                | z                              | Línea 38
+  EQUALS               | =                              | Línea 38
+  IDENT                | x                              | Línea 38
+  GT                   | >                              | Línea 38
+  IDENT                | y                              | Línea 38
+  AND                  | &&                             | Línea 38
+  IDENT                | y                              | Línea 38
+  LTE                  | <=                             | Línea 38
+  NUMBER               | 1                              | Línea 38
+  OR                   | ||                             | Línea 38
+  NOT                  | !                              | Línea 38
+  FALSE                | false                          | Línea 38
+  SEMICOLON            | ;                              | Línea 38
+  LET                  | let                            | Línea 39
+  IDENT                | range                          | Línea 39
+  EQUALS               | =                              | Línea 39
+  NUMBER               | 0                              | Línea 39
+  DOTDOT               | ..                             | Línea 39
+  NUMBER               | 100                            | Línea 39
+  SEMICOLON            | ;                              | Línea 39
+  LET                  | let                            | Línea 41
+  MUT                  | mut                            | Línea 41
+  IDENT                | a                              | Línea 41
+  EQUALS               | =                              | Línea 41
+  NUMBER               | 10                             | Línea 41
+  SEMICOLON            | ;                              | Línea 41
+  IDENT                | a                              | Línea 42
+  PLUS_EQUALS          | +=                             | Línea 42
+  NUMBER               | 5                              | Línea 42
+  SEMICOLON            | ;                              | Línea 42
+  IDENT                | a                              | Línea 43
+  MINUS_EQUALS         | -=                             | Línea 43
+  NUMBER               | 1                              | Línea 43
+  SEMICOLON            | ;                              | Línea 43
+  IDENT                | a                              | Línea 44
+  TIMES_EQUALS         | *=                             | Línea 44
+  NUMBER               | 2                              | Línea 44
+  SEMICOLON            | ;                              | Línea 44
+  IDENT                | a                              | Línea 45
+  DIVIDE_EQUALS        | /=                             | Línea 45
+  NUMBER               | 3                              | Línea 45
+  SEMICOLON            | ;                              | Línea 45
+  LET                  | let                            | Línea 48
+  IDENT                | mi_string                      | Línea 48
+  EQUALS               | =                              | Línea 48
+  STRING               | "hola\nmundo"                  | Línea 48
+  SEMICOLON            | ;                              | Línea 48
+  LET                  | let                            | Línea 49
+  IDENT                | mi_char                        | Línea 49
+  EQUALS               | =                              | Línea 49
+  CHAR                 | 'c'                            | Línea 49
+  SEMICOLON            | ;                              | Línea 49
+  LET                  | let                            | Línea 50
+  IDENT                | mi_float                       | Línea 50
+  EQUALS               | =                              | Línea 50
+  FLOAT                | 3.14159                        | Línea 50
+  SEMICOLON            | ;                              | Línea 50
+  LET                  | let                            | Línea 51
+  IDENT                | mi_array                       | Línea 51
+  EQUALS               | =                              | Línea 51
+  LBRACKET             | [                              | Línea 51
+  NUMBER               | 1                              | Línea 51
+  COMMA                | ,                              | Línea 51
+  NUMBER               | 2                              | Línea 51
+  COMMA                | ,                              | Línea 51
+  NUMBER               | 3                              | Línea 51
+  RBRACKET             | ]                              | Línea 51
+  SEMICOLON            | ;                              | Línea 51
+  LET                  | let                            | Línea 52
+  IDENT                | mi_closure                     | Línea 52
+  EQUALS               | =                              | Línea 52
+  PIPE                 | |                              | Línea 52
+  IDENT                | a                              | Línea 52
+  COLON                | :                              | Línea 52
+  I32                  | i32                            | Línea 52
+  PIPE                 | |                              | Línea 52
+  IDENT                | a                              | Línea 52
+  PLUS                 | +                              | Línea 52
+  NUMBER               | 1                              | Línea 52
+  SEMICOLON            | ;                              | Línea 52
+  LET                  | let                            | Línea 53
+  IDENT                | mi_closure_vacia               | Línea 53
+  EQUALS               | =                              | Línea 53
+  OR                   | ||                             | Línea 53
+  NUMBER               | 1                              | Línea 53
+  SEMICOLON            | ;                              | Línea 53
+  LET                  | let                            | Línea 54
+  IDENT                | referencia                     | Línea 54
+  EQUALS               | =                              | Línea 54
+  AMPERSAND            | &                              | Línea 54
+  IDENT                | x                              | Línea 54
+  SEMICOLON            | ;                              | Línea 54
+  CONSOLE_PRINT        | println!                       | Línea 57
+  LPAREN               | (                              | Línea 57
+  STRING               | "Hola"                         | Línea 57
+  RPAREN               | )                              | Línea 57
+  SEMICOLON            | ;                              | Línea 57
+  CONSOLE_PRINT        | print!                         | Línea 58
+  LPAREN               | (                              | Línea 58
+  STRING               | "Mundo"                        | Línea 58
+  RPAREN               | )                              | Línea 58
+  SEMICOLON            | ;                              | Línea 58
+  CONSOLE_PRINT        | eprintln!                      | Línea 59
+  LPAREN               | (                              | Línea 59
+  STRING               | "Error"                        | Línea 59
+  RPAREN               | )                              | Línea 59
+  SEMICOLON            | ;                              | Línea 59
+  CONSOLE_PRINT        | eprint!                        | Línea 60
+  LPAREN               | (                              | Línea 60
+  STRING               | "Grave"                        | Línea 60
+  RPAREN               | )                              | Línea 60
+  SEMICOLON            | ;                              | Línea 60
+  ERROR                | @                              | Línea 64
+  ERROR                | $                              | Línea 64
+  ERROR                | ?                              | Línea 64
+  ERROR                | #                              | Línea 64
+  RBRACE               | }                              | Línea 65
+
+ERRORES ENCONTRADOS: 4
+  Línea 64: Illegal character '@'
+  Línea 64: Illegal character '$'
+  Línea 64: Illegal character '?'
+  Línea 64: Illegal character '#'

@@ -8,12 +8,15 @@ El lexer está construido utilizando la librería `ply.lex`. En lugar de una cla
 
 La estructura del archivo se divide en:
 
-1.  **`tokens` (Tupla)**: Una lista que declara todos los nombres de los tipos de token que el lexer puede generar. PLY requiere esto para la validación.
+1.  **`tokens` (Tupla)**: Una lista que declara todos los nombres de los tipos de token que el parser puede recibir.
 2.  **`reserved` (Diccionario)**: Un mapa que asocia palabras clave del lenguaje (ej. `"if"`) con su tipo de token correspondiente (ej. `"IF"`). Se utiliza dentro de la regla de identificadores para distinguir entre un identificador genérico y una palabra reservada.
 3.  **Reglas de Tokens (Funciones y Variables)**: El núcleo del lexer. Son variables o funciones con un formato especial `t_TOKENNAME` que PLY reconoce.
     *   **Reglas simples**: Variables con una expresión regular (ej. `t_PLUS = r'\+'`).
     *   **Reglas complejas**: Funciones que tienen una expresión regular en su `docstring` y permiten ejecutar código para realizar acciones más complejas (ej. convertir un string a número, asignar literales, etc.).
-4.  **Función `t_error`**: Una regla especial que captura cualquier carácter que no coincida con ninguna otra regla.
+4.  **Funciones especiales `t_*`**:
+    *   `t_error`: Captura cualquier carácter que no coincida con ninguna otra regla.
+    *   `t_comment`, `t_doc_comment`, `t_ignore_multiline_comment`: Reconocen y descartan diferentes tipos de comentarios.
+    *   `t_newline`: Maneja los saltos de línea para llevar la cuenta del número de línea.
 5.  **Función `tokenize_source`**: La interfaz pública principal que recibe el código fuente y retorna la lista completa de tokens.
 
 ## 2. Proceso de Tokenización y Estructura del Token
@@ -33,15 +36,11 @@ Cada token es un diccionario con los siguientes campos:
 -   `line` (int): El número de línea donde el token comienza (1-indexed).
 -   `column` (int): La posición de la columna (relativa al inicio del archivo) donde el token comienza.
 -   `literal` (any): El valor del token interpretado en Python. Es crucial para los siguientes pasos del compilador.
-    -   Para un `NUMBER`, es un `int` o `float`.
+    -   Para un `NUMBER`, es un `int`.
+    -   Para un `FLOAT`, es un `float`.
     -   Para un `STRING`, es un `str` con las secuencias de escape resueltas (ej. `\n` se convierte en un salto de línea real).
     -   Para `true`/`false`, es el booleano `True`/`False`.
     -   Para otros tokens, suele ser el mismo que el `value`.
-
-**Ejemplo:** `let x = 10;` produce un token `NUMBER` con:
--   `type`: `"NUMBER"`
--   `value`: `"10"`
--   `literal`: `10` (un `int`)
 
 ## 3. Tokens Reconocidos
 
@@ -51,10 +50,9 @@ El lexer reconoce los siguientes tokens, agrupados por categoría:
 - **Control de Flujo**: `IF`, `ELSE`, `WHILE`, `FOR`, `LOOP`, `BREAK`, `CONTINUE`
 - **Declaraciones**: `FN`, `LET`, `MUT`, `RETURN`, `CONST`, `STATIC`
 - **Tipos**: `I32`, `I64`, `U32`, `U64`, `F32`, `F64`, `BOOL`, `CHAR`, `STR`, `STRING_TYPE`, `TRUE`, `FALSE`
-- **Estructuras**: `STRUCT`, `ENUM`, `MOD`, `USE`, `PUB`, `SELF`, `SELF_TYPE`
-- **Traits**: `TRAIT`, `IMPL`, `WHERE`
-- **Memoria**: `BOX`, `VEC`, `OPTION`, `SOME`, `NONE`
-- **I/O**: `PRINTLN`, `INPUT`, `IN`
+- **Estructuras**: `STRUCT`, `ENUM`, `SELF`, `SELF_TYPE`
+- **Traits**: `TRAIT`, `IMPL`
+- **I/O**: `INPUT`, `IN`
 
 #### Literales e Identificadores
 - `IDENT`: Nombres de variables, funciones, etc.
@@ -63,50 +61,28 @@ El lexer reconoce los siguientes tokens, agrupados por categoría:
 - `STRING`: Cadenas de texto.
 
 #### Macros
-- `CONSOLE_PRINT`: La macro `println!`.
-- `VEC_CREATE`: La macro `vec!`.
+- `CONSOLE_PRINT`: Las macros `println!`, `print!`, `eprintln!` y `eprint!`.
 
 #### Operadores y Símbolos
-- **Aritméticos**: `PLUS` (+), `MINUS` (-), `TIMES` (*), `DIVIDE` (/)
+- **Aritméticos**: `PLUS` (+), `MINUS` (-), `TIMES` (*), `DIVIDE` (/), `MODULO` (%)
 - **Asignación**: `EQUALS` (=), `PLUS_EQUALS` (+=), `MINUS_EQUALS` (-=), `TIMES_EQUALS` (*=), `DIVIDE_EQUALS` (/=)
 - **Comparación**: `EQ` (==), `NEQ` (!=), `LT` (<), `LTE` (<=), `GT` (>), `GTE` (>=)
 - **Lógicos**: `AND` (&&), `OR` (||), `NOT` (!)
-- **Otros**: `ARROW` (->)
+- **Otros**: `ARROW` (->), `DOTDOT` (..)
 
 #### Delimitadores
 - `LPAREN` ((), `RPAREN` ()), `LBRACE` ({), `RBRACE` (}), `LBRACKET` ([), `RBRACKET` (])
-- `SEMICOLON` (;), `COLON` (:), `COMMA` (,)
+- `SEMICOLON` (;), `COLON` (:), `COMMA` (,), `PIPE` (|)
 
-#### Errores y Comentarios
-- `ERROR`: Para caracteres no reconocidos.
-- `COMMENT`: (Ignorado) Comentarios de una o varias líneas.
-
+#### Referencias
+- `AMPERSAND` (&)
 
 ## 4. Reglas Especiales y Manejo de Errores
 
 ### Reglas de Prioridad para Macros
-Para reconocer `println!` o `vec!` como un solo token en lugar de dos (`println` y `!`), se definen reglas específicas para estos patrones. En PLY, el orden de las reglas importa. Las reglas definidas como funciones tienen prioridad sobre las definidas como variables. Entre funciones, la que aparece primero en el archivo tiene prioridad si ambas pueden coincidir.
+Para reconocer `println!` como un solo token en lugar de dos (`println` y `!`), se define una regla específica para este patrón. En PLY, el orden de las reglas importa.
 
-Por ello, las funciones `t_CONSOLE_PRINT` y `t_VEC_CREATE` están definidas **antes** que la regla genérica `t_identifier`.
-
-```python
-# Reglas para macros específicas (deben ir ANTES de t_identifier)
-def t_CONSOLE_PRINT(t):
-    r'println!'
-    t.literal = t.value
-    return t
-
-def t_VEC_CREATE(t):
-    r'vec!'
-    t.literal = t.value
-    return t
-
-# Regla genérica para identificadores
-def t_identifier(t):
-    r"[a-zA-Z_][a-zA-Z0-9_]*"
-    # ...
-```
-Esto asegura que el lexer intente hacer coincidir `println!` primero. Si no lo logra, pasará a la siguiente regla, `t_identifier`, como respaldo.
+La función `t_CONSOLE_PRINT` está definida **antes** que la regla genérica `t_identifier`. Esto asegura que el lexer intente hacer coincidir `println!` (y variantes) primero. Si no lo logra, pasará a la siguiente regla, `t_identifier`, como respaldo.
 
 ### Manejo de Errores
 Cuando el lexer encuentra un carácter que no encaja en ninguna regla (ej. `#`, `$`), se invoca la función `t_error(t)`. Nuestra implementación:
@@ -118,58 +94,3 @@ Cuando el lexer encuentra un carácter que no encaja en ninguna regla (ej. `#`, 
 3.  **Avanza**: Llama a `t.lexer.skip(1)` para avanzar al siguiente carácter y continuar la tokenización.
 
 Esto permite que la interfaz de usuario reciba y muestre una lista completa de errores léxicos en una sola pasada.
-
-## 5. Salida para el Parser
-
-La función `tokenize_source` entrega al parser (o a cualquier otro consumidor) una `list` de diccionarios (los tokens). Esta es la estructura de datos final y el "contrato" que el parser debe esperar.
-
-**Ejemplo de Salida para `vec![1]`:**
-```json
-[
-  { "type": "VEC_CREATE", "value": "vec!", "line": 1, "column": 0, "literal": "vec!" },
-  { "type": "LBRACKET", "value": "[", "line": 1, "column": 4, "literal": "[" },
-  { "type": "NUMBER", "value": "1", "line": 1, "column": 5, "literal": 1 },
-  { "type": "RBRACKET", "value": "]", "line": 1, "column": 6, "literal": "]" }
-]
-```
-
-## 6. Consideraciones para Agregar Nuevos Tokens
-
-Extender el lexer es un proceso sencillo si se siguen los patrones establecidos.
-
-#### Caso 1: Nuevo Keyword (ej. `async`)
-
-1.  **Añadir el nombre del token** a la tupla `tokens`.
-    ```python
-    "STATIC", "ASYNC", # ...
-    ```
-2.  **Añadir la palabra reservada** al diccionario `reserved`.
-    ```python
-    "static": "STATIC",
-    "async": "ASYNC",
-    # ...
-    ```
-La regla `t_identifier` se encargará del resto.
-
-#### Caso 2: Nuevo Símbolo Simple (ej. `^` para XOR)
-
-1.  **Añadir el nombre del token** a la tupla `tokens` (ej. `XOR`).
-2.  **Añadir la regla simple** junto a las otras. La expresión regular debe escapar caracteres especiales.
-    ```python
-    t_NOT = r"!"; t_LT = r"<"; t_GT = r">"; t_XOR = r"\^")
-    ```
-
-#### Caso 3: Nueva Macro (ej. `panic!`)
-
-1.  **Añadir el nombre del token** a la tupla `tokens` (ej. `PANIC_MACRO`).
-2.  **Crear una nueva función de regla** para la macro. **Es crucial colocarla antes de `t_identifier`**.
-    ```python
-    def t_PANIC_MACRO(t):
-        r'panic!'
-        t.literal = t.value
-        return t
-
-    # ...después va t_identifier...
-def t_identifier(t):
-#...
-    ```

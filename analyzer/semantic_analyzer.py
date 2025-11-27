@@ -165,7 +165,57 @@ class SemanticAnalyzer:
             if size_expr[0] == 'literal' and size_expr[2] == 'NUMBER':
                 size_val = size_expr[1]
 
-            return f'[{value_type}; {size_val}]'
+        elif node_type == 'closure':
+            # AST: ('closure', params, return_type, body)
+            _closure, params, return_type, body = expr_node
+            
+            self.symbol_table.enter_scope()
+            
+            param_types = []
+            for param in params:
+                # param is ('param', name, type)
+                param_name = param[1]
+                # HACK: Assume i32 for untyped params for now. A real implementation needs inference.
+                param_type = param[2] if param[2] else 'i32'
+                param_types.append(param_type)
+                self.symbol_table.add(param_name, param_type, is_mutable=False, is_initialized=True, line_no=line_no)
+
+            # Now, with params in scope, analyze the body to determine its return type
+            body_type = self.get_expression_type(body, line_no)
+            
+            self.symbol_table.exit_scope()
+            
+            # Construct a string representation of the closure's type
+            param_types_str = ", ".join(param_types)
+            closure_type_str = f"Fn({param_types_str}) -> {body_type}"
+            
+            return closure_type_str
+
+        elif node_type == 'closure_expr':
+            # AST: ('closure', params, return_type, body)
+            _closure, params, return_type, body = expr_node
+            
+            self.symbol_table.enter_scope()
+            
+            param_types = []
+            for param in params:
+                # param is ('param', name, type)
+                param_name = param[1]
+                # HACK: Assume i32 for untyped params for now. A real implementation needs inference.
+                param_type = param[2] if param[2] else 'i32'
+                param_types.append(param_type)
+                self.symbol_table.add(param_name, param_type, is_mutable=False, is_initialized=True, line_no=line_no)
+
+            # Now, with params in scope, analyze the body to determine its return type
+            body_type = self.get_expression_type(body, line_no)
+            
+            self.symbol_table.exit_scope()
+            
+            # Construct a string representation of the closure's type
+            param_types_str = ", ".join(param_types)
+            closure_type_str = f"Fn({param_types_str}) -> {body_type}"
+            
+            return closure_type_str
 
         elif node_type == 'tuple_literal':
             elements = expr_node[1]
@@ -173,6 +223,21 @@ class SemanticAnalyzer:
                 return '()'
             elem_types = [self.get_expression_type(e, line_no) for e in elements]
             return f'({", ".join(elem_types)})'
+
+        elif node_type == 'binop':
+            # AST: ('binop', left, op, right)
+            left_type = self.get_expression_type(expr_node[1], line_no)
+            right_type = self.get_expression_type(expr_node[3], line_no)
+            # Simple rule: if both are numeric and same, return that type.
+            numeric_types = {'i32', 'i64', 'u32', 'u64', 'f32', 'f64'}
+            if left_type in numeric_types and right_type in numeric_types:
+                # For simplicity, we can assume the result type is the same as the operands' type
+                # A more complex implementation would handle type promotion (e.g., i32 + f64 -> f64)
+                return left_type 
+            return 'unknown'
+        
+        elif node_type in ('comparison', 'and', 'or', 'not'):
+            return 'bool'
 
         return 'unknown'
 
@@ -347,28 +412,28 @@ class SemanticAnalyzer:
     # RESPONSABILIDAD: vicbguti29
     # ============================================================================
     def visit_binop(self, node):
-        # AST: ('binop', left_expr, operator, right_expr)
-        _binop, left_expr, operator, right_expr = node
+        # AST: ('binop', left_expr, operator, right_expr, line_no)
+        _binop, left_expr, operator, right_expr, line_no = node
         
-        left_type = self.get_expression_type(left_expr)
-        right_type = self.get_expression_type(right_expr)
+        left_type = self.get_expression_type(left_expr, line_no)
+        right_type = self.get_expression_type(right_expr, line_no)
         
         # Ambos deben ser numéricos
         numeric_types = {'i32', 'i64', 'u32', 'u64', 'f32', 'f64'}
         
         if left_type not in numeric_types and left_type != 'unknown':
-            error_msg = f"Error Semántico: Operador aritmético '{operator}' no puede aplicarse a tipo '{left_type}'. Se esperaba un tipo numérico."
+            error_msg = f"Error Semántico (Línea {line_no}): Operador aritmético '{operator}' no puede aplicarse a tipo '{left_type}'. Se esperaba un tipo numérico."
             self.errors.append(error_msg)
             return
         
         if right_type not in numeric_types and right_type != 'unknown':
-            error_msg = f"Error Semántico: Operador aritmético '{operator}' no puede aplicarse a tipo '{right_type}'. Se esperaba un tipo numérico."
+            error_msg = f"Error Semántico (Línea {line_no}): Operador aritmético '{operator}' no puede aplicarse a tipo '{right_type}'. Se esperaba un tipo numérico."
             self.errors.append(error_msg)
             return
         
         # Los tipos deben coincidir
         if left_type != 'unknown' and right_type != 'unknown' and left_type != right_type:
-            error_msg = f"Error Semántico: Operador aritmético '{operator}' no puede aplicarse a tipos '{left_type}' y '{right_type}'. No existe una implementación para esta operación."
+            error_msg = f"Error Semántico (Línea {line_no}): Operador aritmético '{operator}' no puede aplicarse a tipos '{left_type}' y '{right_type}'. No existe una implementación para esta operación."
             self.errors.append(error_msg)
 
     # ============================================================================
@@ -496,6 +561,23 @@ class SemanticAnalyzer:
         for stmt in else_body:
             self.visit(stmt)
         self.exit_scope()
+
+    def visit_closure(self, node):
+        # AST: ('closure', params, return_type, body)
+        _closure, params, return_type, body = node
+        
+        self.symbol_table.enter_scope()
+        
+        for param in params:
+            param_name = param[1]
+            # HACK: Assume i32 for untyped params
+            param_type = param[2] if param[2] else 'i32'
+            self.symbol_table.add(param_name, param_type, is_mutable=False, is_initialized=True)
+
+        # Now, with params in scope, visit the body
+        self.visit(body)
+        
+        self.symbol_table.exit_scope()
 
     def visit_comparison(self, node):
         # AST: ('comparison', left_expr, operator, right_expr)

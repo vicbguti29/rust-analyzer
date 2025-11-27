@@ -10,98 +10,74 @@ Para el análisis semántico, hemos adoptado el enfoque de **"Análisis Semánti
 
 El proceso se divide en dos fases claras e independientes:
 
-1.  **Fase de Parsing (Análisis Sintáctico):** El parser, construido con `ply.yacc`, tiene una única responsabilidad: validar la gramática del código fuente y construir una representación completa y estructurada del mismo, conocida como **Árbol de Sintaxis Abstracta (AST)**. En esta fase no se toma ninguna decisión sobre el significado del código.
+1.  **Fase de Parsing (Análisis Sintáctico):** El parser tiene una única responsabilidad: validar la gramática del código fuente y construir una representación completa y estructurada del mismo, conocida como **Árbol de Sintaxis Abstracta (AST)**.
 
 2.  **Fase de Análisis Semántico:** Un componente totalmente separado, nuestra clase `SemanticAnalyzer`, recibe el AST completo. Este analizador "camina" o "visita" cada nodo del árbol, aplicando las reglas semánticas (como la verificación de tipos o de mutabilidad) en cada punto.
 
 ### 1.2. ¿Por qué elegimos este enfoque?
 
-Aunque existen otras técnicas, como ejecutar acciones semánticas directamente dentro de las reglas del parser, nuestro enfoque ofrece ventajas significativas para un lenguaje tan complejo como Rust:
-
--   **Modularidad y Mantenimiento:** Mantiene la lógica del parser y la del análisis semántico completamente separadas. Esto hace que el código sea más limpio, más fácil de entender, de probar y de modificar en el futuro.
+-   **Modularidad y Mantenimiento:** Mantiene la lógica del parser y la del análisis semántico completamente separadas, lo que hace el código más limpio, fácil de probar y de modificar.
 -   **Potencia y Flexibilidad:** Al tener el árbol completo desde el principio, el analizador puede tomar decisiones de validación con un contexto global del código, lo que es crucial para las reglas de scope y la resolución de tipos complejos.
--   **Escalabilidad:** Esta arquitectura es la única que permite añadir fácilmente fases posteriores del compilador, como la optimización de código o la generación de código intermedio, ya que todas ellas pueden operar sobre el mismo AST.
+-   **Escalabilidad:** Esta arquitectura permite añadir fácilmente fases posteriores del compilador, como la optimización o la generación de código intermedio.
 
----
+## 2. Tabla de Símbolos (`SymbolTable`)
 
-## 2. Tabla de Símbolos (Pendiente)
+La Tabla de Símbolos es el componente central del análisis semántico. Es una estructura de datos que rastrea todos los identificadores (variables, funciones, etc.) que están "en scope" en un punto determinado del programa.
 
-*(Esta sección será completada una vez se desarrolle la Tabla de Símbolos).*
+### 2.1. Diseño y Gestión de Scopes
+Nuestra implementación utiliza una **pila de scopes**.
+-   Cada scope (o ámbito) es un diccionario que mapea nombres de identificadores a la información sobre ellos.
+-   Cuando el analizador entra en un nuevo bloque de código (como el cuerpo de una función), se "empuja" un nuevo diccionario vacío a la pila (`enter_scope`).
+-   Cuando el analizador sale del bloque, el diccionario de ese scope se "saca" de la pila (`exit_scope`), y todas las variables declaradas dentro de él dejan de ser accesibles.
+-   La búsqueda de un símbolo (`lookup`) se realiza desde el scope más reciente (el final de la pila) hacia el más antiguo (el global), imitando cómo Rust resuelve los nombres.
 
-
-*(Aquí se explicará el diseño de la tabla de símbolos, cómo maneja los scopes anidados, y qué información almacena para cada símbolo: tipo, mutabilidad, etc.)*
-
----
+### 2.2. Información Almacenada por Símbolo
+Para cada identificador, la tabla almacena un diccionario con los siguientes datos:
+-   `type`: El tipo de dato de la variable (ej. `'i32'`, `'bool'`).
+-   `is_mutable`: Un booleano que indica si la variable fue declarada con `mut`.
+-   `is_initialized`: Un booleano para rastrear si a una variable ya se le ha asignado un valor.
+-   `scope_level`: El nivel de anidamiento del scope donde fue declarada.
+-   `line_declared`: El número de línea donde se realizó la declaración.
 
 ## 3. Reglas Semánticas Implementadas
 
-A continuación se detallan las reglas semánticas implementadas y las que están pendientes.
+A continuación se detallan las reglas semánticas que el analizador verifica actualmente.
 
-### 3.1. Reglas Pendientes (vicbguti29)
+### REGLA 1: VALIDACIÓN DE EXISTENCIA
+- **Descripción:** Verifica que cualquier variable utilizada en una expresión haya sido declarada previamente en el scope actual o en uno superior.
+- **Error Generado:** `Error Semántico: Identificador no encontrado. La variable 'x' no ha sido declarada.`
 
-#### REGLA 1: VALIDACIÓN DE EXISTENCIA
+### REGLA 2: ALCANCE LOCAL (SCOPE)
+- **Descripción:** Asegura que las variables solo sean accesibles dentro del bloque donde fueron declaradas o en bloques anidados. No se puede acceder a una variable de un scope interno desde un scope externo.
+- **Error Generado:** `Error Semántico: El identificador 'x' no es accesible. Fue definido en un alcance interno que ya finalizó.`
 
-*(Aquí se explicará cómo se utiliza la tabla de símbolos para verificar que una variable ha sido declarada antes de ser utilizada).*
+### REGLA 3: DISCREPANCIA DE TIPOS EN DECLARACIÓN
+- **Descripción:** Al declarar una variable con tipo explícito (`let x: T = val;`), verifica que el tipo de `val` coincida con `T`.
+- **Error Generado:** `Error Semántico: Discrepancia de tipos. Se esperaba tipo 'bool' pero se encontró tipo 'i32'.`
 
-#### REGLA 2: ALCANCE LOCAL (SCOPE)
+### REGLA 4: DISCREPANCIA DE TIPOS EN REASIGNACIÓN
+- **Descripción:** Al reasignar una variable (`x = nuevo_val;`), verifica que el tipo de `nuevo_val` coincida con el tipo original de `x`.
+- **Error Generado:** `Error Semántico: Discrepancia de tipos en la reasignación. La variable 'x' tiene el tipo 'i32', pero se intentó asignar un valor de tipo '&str'.`
 
-*(Aquí se explicará la gestión de scopes, asegurando que las variables solo sean accesibles dentro del bloque donde fueron declaradas).*
+### REGLA 5: VALIDACIÓN DE MUTABILIDAD
+- **Descripción:** Asegura que solo las variables declaradas con `mut` puedan ser reasignadas. También se aplica a constantes (`const`) y estáticas (`static`) inmutables.
+- **Error Generado:** `Error Semántico: No se puede asignar a la variable inmutable 'x'.`
 
----
+### REGLA 6: USO DE VARIABLES NO INICIALIZADAS
+- **Descripción:** Si una variable se declara sin un valor (`let x: i32;`), el analizador la marca como "no inicializada". Se genera un error si se intenta usar en una expresión antes de que se le asigne un valor por primera vez.
+- **Error Generado:** `Error Semántico: se usó la variable no inicializada 'x'.`
 
-### 3.2. Reglas Implementadas (Alvascon)
+### REGLA 7: TAMAÑO DE ARRAY INVÁLIDO
+- **Descripción:** En la sintaxis de repetición de arrays (`[val; size]`), verifica que la expresión `size` sea de un tipo entero.
+- **Error Generado:** `Error Semántico: el tamaño del array debe ser un entero, pero se encontró tipo 'bool'.`
 
-#### REGLA 3: DISCREPANCIA DE TIPOS EN DECLARACIÓN
+## 4. Limitaciones y Trabajo Futuro
 
-**Descripción:** Esta regla se activa al declarar una variable con una anotación de tipo explícita (ej. `: i32`). Verifica que el tipo de la expresión asignada a la derecha coincida exactamente con el tipo declarado.
-
--   **Caso Válido:** El tipo de la expresión coincide con el tipo declarado.
-    ```rust
-    // El valor '10' es de tipo i32, que coincide con la declaración.
-    let x: i32 = 10; 
-    ```
-
--   **Caso Inválido:** El tipo de la expresión no coincide con el tipo declarado.
-    ```rust
-    // Se esperaba un 'bool', pero se asignó un 'i32'.
-    let error: bool = 1;
-    ```
-    **Error Generado:** `Error Semántico (Línea 34): Discrepancia de tipos. Se esperaba tipo 'bool' pero se encontró tipo 'i32' en la asignación de 'error'.`
-
----
-
-#### REGLA 4: DISCREPANCIA DE TIPOS EN REASIGNACIÓN
-
-**Descripción:** Esta regla se activa al reasignar un valor a una variable mutable. Verifica que el tipo del nuevo valor sea el mismo que el tipo con el que la variable fue declarada originalmente.
-
--   **Caso Válido:** El nuevo valor tiene el mismo tipo que la variable.
-    ```rust
-    let mut variable = "hola"; // El tipo de 'variable' se infiere como &str
-    variable = "mundo";       // Válido, ambos son &str
-    ```
-
--   **Caso Inválido:** El nuevo valor tiene un tipo diferente al original.
-    ```rust
-    let mut variable = 123; // El tipo de 'variable' se infiere como i32
-    variable = "texto";    // Inválido, se intenta asignar &str a i32
-    ```
-    **Error Generado:** `Error Semántico (Línea 42): Discrepancia de tipos en la reasignación. La variable 'error4' tiene el tipo '&str', pero se intentó asignar un valor de tipo 'i32'.`
-
----
-
-#### REGLA 5: VALIDACIÓN DE MUTABILIDAD EN REASIGNACIÓN
-
-**Descripción:** Esta regla garantiza que solo las variables declaradas con la palabra clave `mut` puedan ser reasignadas. Si se intenta modificar una variable inmutable, se genera un error.
-
--   **Caso Válido:** Se reasigna una variable declarada como mutable.
-    ```rust
-    let mut variable_mutable = 10;
-    variable_mutable = 20; // Válido
-    ```
-
--   **Caso Inválido:** Se intenta reasignar una variable inmutable.
-    ```rust
-    let variable_inmutable = 1000;
-    variable_inmutable = 2000; // Inválido
-    ```
-    **Error Generado:** `Error Semántico (Línea 70): No se puede asignar a la variable inmutable 'immutable_var'. Las variables deben ser declaradas con 'mut' para poder ser reasignadas.`
+### Análisis Semántico de Closures (Pendiente)
+- **Estado Actual:** Aunque el parser reconoce la sintaxis completa de las closures, el analizador semántico **aún no las procesa**.
+- **Tareas Pendientes:**
+    1.  Implementar la creación de un **nuevo scope** para los parámetros de la closure.
+    2.  Añadir los parámetros a la tabla de símbolos dentro de ese scope.
+    3.  Realizar la inferencia de tipos para los parámetros no tipados.
+    4.  Verificar la consistencia entre el tipo de retorno explícito (`-> T`) y el tipo del valor devuelto por el cuerpo.
+    5.  Determinar el tipo de la propia closure (ej. `Fn(i32) -> i32`).

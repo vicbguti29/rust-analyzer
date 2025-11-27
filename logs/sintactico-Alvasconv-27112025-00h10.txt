@@ -1,3 +1,12 @@
+================================================================================
+REPORTE DE ANALISIS SINTACTICO
+================================================================================
+Fecha y Hora: 27-11-2025 00:10:15
+Desarrollador: Alvasconv
+================================================================================
+
+CODIGO FUENTE ANALIZADO:
+--------------------------------------------------------------------------------
 // --- Archivo de Prueba para Errores Sintácticos ---
 // Este archivo contiene una colección de errores de sintaxis
 // para verificar que el parser los detecta correctamente.
@@ -62,3 +71,39 @@ fn error_expresiones() {
     let a = 10 + * 5; // Error: Operador binario sin operando izquierdo
     let b = (10 + 5; // Error: Paréntesis sin cerrar
 }
+--------------------------------------------------------------------------------
+
+ERRORES ENCONTRADOS: 8
+--------------------------------------------------------------------------------
+
+1. Error en Linea 6
+   Mensaje: Syntax error at line 6: unexpected token '5' (NUMBER)
+   Token: 5
+
+2. Error en Linea 13
+   Mensaje: Syntax error at line 13: unexpected token 'println!' (CONSOLE_PRINT)
+   Token: println!
+
+3. Error en Linea 27
+   Mensaje: Syntax error at line 27: unexpected token '}' (RBRACE)
+   Token: }
+
+4. Error en Linea 39
+   Mensaje: Syntax error at line 39: unexpected token 'fn' (FN)
+   Token: fn
+
+5. Error en Linea 43
+   Mensaje: Syntax error at line 43: unexpected token '{' (LBRACE)
+   Token: {
+
+6. Error en Linea 49
+   Mensaje: Syntax error at line 49: unexpected token 'struct' (STRUCT)
+   Token: struct
+
+7. Error en Linea 56
+   Mensaje: Syntax error at line 56: unexpected token '{' (LBRACE)
+   Token: {
+
+8. Error en Linea 62
+   Mensaje: Syntax error at line 62: unexpected token '*' (TIMES)
+   Token: *
